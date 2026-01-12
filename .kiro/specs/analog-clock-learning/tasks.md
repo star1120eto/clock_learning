@@ -41,26 +41,26 @@ Use whichever pattern fits the work breakdown:
   - アプリタイトルとテーマの基本設定
   - _Requirements: 8.1, 8.2, 8.6_
 
-- [ ] 2. データモデルの実装
-- [ ] 2.1 (P) Time値オブジェクトの実装
+- [x] 2. データモデルの実装
+- [x] 2.1 (P) Time値オブジェクトの実装
   - hour（1〜12）、minute（0〜59）を持つ値オブジェクト
   - バリデーションと不変条件の実装
   - 内部計算用の0〜11変換メソッド
   - _Requirements: 1.1, 3.1, 4.1, 5.1_
 
-- [ ] 2.2 (P) Problemエンティティの実装
+- [x] 2.2 (P) Problemエンティティの実装
   - sealed classでEasyProblem、NormalProblem、HardProblemを定義
   - FiveMinuteInterval enumの実装
   - 問題文のひらがな表記生成メソッド
   - _Requirements: 2.3, 2.4, 2.5, 3.1, 4.1, 5.1_
 
-- [ ] 2.3 (P) ProgressData集約ルートの実装
+- [x] 2.3 (P) ProgressData集約ルートの実装
   - LevelProgress、Achievementクラスの実装
   - 正解率計算メソッド
   - 連続学習日数計算ロジック
   - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5_
 
-- [ ] 2.4 (P) Level enumの実装
+- [x] 2.4 (P) Level enumの実装
   - easy、normal、hardの3つのレベルを定義
   - レベル名のひらがな表記メソッド
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
