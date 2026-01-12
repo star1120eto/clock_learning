@@ -20,23 +20,23 @@ Use whichever pattern fits the work breakdown:
 >
 > **Optional test coverage**: When a sub-task is deferrable test work tied to acceptance criteria, mark the checkbox as `- [ ]*` and explain the referenced requirements in the detail bullets.
 
-- [ ] 1. プロジェクトセットアップと依存関係の追加
-- [ ] 1.1 依存関係パッケージの追加
+- [x] 1. プロジェクトセットアップと依存関係の追加
+- [x] 1.1 依存関係パッケージの追加
   - pubspec.yamlにProvider、SharedPreferences、audioplayers、Lottieを追加
   - flutter pub getを実行してパッケージをインストール
   - _Requirements: -_
 
-- [ ] 1.2 プロジェクトディレクトリ構造の作成
+- [x] 1.2 プロジェクトディレクトリ構造の作成
   - lib/models/、lib/screens/、lib/widgets/、lib/services/、lib/utils/、lib/constants/ディレクトリを作成
   - 命名規則に従ったディレクトリ構造を確立
   - _Requirements: -_
 
-- [ ] 1.3 アセットディレクトリの作成
+- [x] 1.3 アセットディレクトリの作成
   - assets/audio/、assets/animations/ディレクトリを作成
   - pubspec.yamlにアセットパスを追加
   - _Requirements: -_
 
-- [ ] 1.4 アプリの基本設定
+- [x] 1.4 アプリの基本設定
   - 縦向き（Portrait）固定の設定
   - アプリタイトルとテーマの基本設定
   - _Requirements: 8.1, 8.2, 8.6_
