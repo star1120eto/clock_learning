@@ -61,7 +61,7 @@ class ClockState {
 }
 
 /// 時計の操作ロジックを担当するコントローラー
-class ClockController {
+class ClockController extends ChangeNotifier {
   ClockState _state = ClockState(
     hour: 12,
     minute: 0,
@@ -77,6 +77,7 @@ class ClockController {
   void initialize(int hour, int minute, Level level) {
     _level = level;
     _updateState(hour, minute);
+    notifyListeners();
   }
 
   /// タッチ開始時の処理
@@ -92,6 +93,7 @@ class ClockController {
 
     _isDragging = true;
     _updateMinuteAngleFromPosition(position, clockSize);
+    notifyListeners();
   }
 
   /// ドラッグ更新時の処理
@@ -101,6 +103,7 @@ class ClockController {
     }
 
     _updateMinuteAngleFromPosition(position, clockSize);
+    notifyListeners();
   }
 
   /// タッチ終了時の処理
@@ -121,6 +124,7 @@ class ClockController {
     _state = _state.copyWith(
       interactionState: ClockInteractionState.idle,
     );
+    notifyListeners();
   }
 
   /// 現在の状態を取得
@@ -238,6 +242,7 @@ class ClockController {
   void _snapToFiveMinuteInterval() {
     final snappedMinute = _snapToFiveMinute(_state.minute);
     _updateState(_state.hour, snappedMinute);
+    notifyListeners();
   }
 
   /// 有効なタッチ位置か判定

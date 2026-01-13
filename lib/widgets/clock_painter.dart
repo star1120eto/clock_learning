@@ -93,6 +93,12 @@ class ClockPainter extends CustomPainter {
       color: Colors.black87,
     );
 
+    // TextPainterを再利用してメモリ効率を向上
+    final textPainter = TextPainter(
+      textAlign: TextAlign.center,
+      textDirection: TextDirection.ltr,
+    );
+
     for (int i = 1; i <= 12; i++) {
       // 数字の位置を計算（12時を0度として時計回り）
       final angle = (i * 30.0 - 90.0) * (pi / 180); // 12時を上にするため-90度
@@ -100,14 +106,9 @@ class ClockPainter extends CustomPainter {
       final x = center.dx + cos(angle) * numberRadius;
       final y = center.dy + sin(angle) * numberRadius;
 
-      final textSpan = TextSpan(
+      textPainter.text = TextSpan(
         text: i.toString(),
         style: textStyle,
-      );
-      final textPainter = TextPainter(
-        text: textSpan,
-        textAlign: TextAlign.center,
-        textDirection: TextDirection.ltr,
       );
       textPainter.layout();
       textPainter.paint(

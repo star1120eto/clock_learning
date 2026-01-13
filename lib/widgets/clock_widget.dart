@@ -22,6 +22,25 @@ class ClockWidget extends StatefulWidget {
 
 class _ClockWidgetState extends State<ClockWidget> {
   @override
+  void initState() {
+    super.initState();
+    // ClockControllerの変更を監視
+    widget.controller.addListener(_onControllerChanged);
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_onControllerChanged);
+    super.dispose();
+  }
+
+  void _onControllerChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onPanStart: (details) {
@@ -33,7 +52,6 @@ class _ClockWidgetState extends State<ClockWidget> {
           localPosition,
           renderBox.size,
         );
-        if (mounted) setState(() {});
       },
       onPanUpdate: (details) {
         final renderBox = context.findRenderObject() as RenderBox?;
@@ -44,11 +62,9 @@ class _ClockWidgetState extends State<ClockWidget> {
           localPosition,
           renderBox.size,
         );
-        if (mounted) setState(() {});
       },
       onPanEnd: (_) {
         widget.controller.onTouchEnd();
-        if (mounted) setState(() {});
       },
       child: Container(
         width: widget.size,

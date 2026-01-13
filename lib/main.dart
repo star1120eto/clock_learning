@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:clock_learning/screens/home_screen.dart';
+import 'package:clock_learning/utils/performance_monitor.dart';
+import 'package:flutter/foundation.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -9,6 +11,13 @@ void main() {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
+
+  // パフォーマンス監視を開始（デバッグモードのみ）
+  if (kDebugMode) {
+    final monitor = PerformanceMonitor();
+    monitor.startMonitoring();
+  }
+
   runApp(const MyApp());
 }
 
