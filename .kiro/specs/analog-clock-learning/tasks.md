@@ -212,21 +212,21 @@ Use whichever pattern fits the work breakdown:
   - カラフルなカード型UI
   - _Requirements: 7.3, 7.4, 7.5, 8.1, 8.2, 8.7, 8.8_
 
-- [ ] 8. アプリ統合とメインエントリーポイント
-- [ ] 8.1 main.dartの更新
+- [x] 8. アプリ統合とメインエントリーポイント
+- [x] 8.1 main.dartの更新
   - MaterialAppの設定
   - Providerの設定
   - テーマの設定（カラフルなデザイン）
   - 初期画面をHomeScreenに設定
   - _Requirements: 1.1, 8.1, 8.2_
 
-- [ ] 8.2 画面遷移の統合
+- [x] 8.2 画面遷移の統合
   - HomeScreen → LevelSelectScreen → GameScreenの遷移
   - HomeScreen → ProgressScreenの遷移
   - Navigator引数を使用したデータ受け渡し
   - _Requirements: 1.1, 2.1, 2.2, 7.3_
 
-- [ ] 8.3 サービス層の統合
+- [x] 8.3 サービス層の統合
   - 各サービスの初期化と依存性注入
   - Provider経由でのサービス提供
   - _Requirements: -_
