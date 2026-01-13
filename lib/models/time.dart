@@ -47,51 +47,13 @@ class Time {
     return '$hour時$minute分';
   }
 
-  /// 時間をひらがなで取得
-  /// 例: "さんじじゅうごふん"
+  /// 時間をひらがなで取得（時と分は数字、「じ」「ふん」はひらがな）
+  /// 例: "3じ 15ふん"
   String get hiraganaString {
-    final hourStr = _numberToHiragana(hour);
     if (minute == 0) {
-      return '$hourStrじ';
+      return '$hourじ';
     }
-    final minuteStr = _numberToHiragana(minute);
-    return '$hourStrじ$minuteStrふん';
-  }
-
-  /// 数字をひらがなに変換
-  String _numberToHiragana(int number) {
-    const hiraganaMap = {
-      0: 'ぜろ',
-      1: 'いち',
-      2: 'に',
-      3: 'さん',
-      4: 'よん',
-      5: 'ご',
-      6: 'ろく',
-      7: 'なな',
-      8: 'はち',
-      9: 'きゅう',
-      10: 'じゅう',
-      11: 'じゅういち',
-      12: 'じゅうに',
-    };
-
-    if (number <= 12) {
-      return hiraganaMap[number] ?? number.toString();
-    }
-
-    // 13以上の場合
-    if (number < 20) {
-      return 'じゅう${hiraganaMap[number % 10]}';
-    } else if (number < 30) {
-      return 'にじゅう${hiraganaMap[number % 10]}';
-    } else if (number < 40) {
-      return 'さんじゅう${hiraganaMap[number % 10]}';
-    } else if (number < 50) {
-      return 'よんじゅう${hiraganaMap[number % 10]}';
-    } else {
-      return 'ごじゅう${hiraganaMap[number % 10]}';
-    }
+    return '$hourじ $minuteふん';
   }
 
   @override

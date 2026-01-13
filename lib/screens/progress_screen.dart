@@ -26,14 +26,25 @@ class _ProgressScreenState extends State<ProgressScreen> {
     final progressService = ProgressService(storageService);
     final progressData = await progressService.getProgress();
 
+    // LevelProgressをJSON形式に変換
+    final levelProgressJson = <String, dynamic>{};
+    for (final entry in progressData.levelProgress.entries) {
+      levelProgressJson[entry.key.name] = entry.value.toJson();
+    }
+    
+    // AchievementをJSON形式に変換
+    final achievementsJson = progressData.achievements
+        .map((a) => a.toJson())
+        .toList();
+
     setState(() {
       _progressData = {
         'totalCorrectAnswers': progressData.totalCorrectAnswers,
         'totalQuestions': progressData.totalQuestions,
         'accuracyRate': progressData.accuracyRate,
         'consecutiveDays': progressData.consecutiveDays,
-        'levelProgress': progressData.levelProgress,
-        'achievements': progressData.achievements,
+        'levelProgress': levelProgressJson,
+        'achievements': achievementsJson,
       };
       _isLoading = false;
     });
@@ -142,9 +153,42 @@ class _ProgressScreenState extends State<ProgressScreen> {
   }
 
   Widget _buildLevelProgress(Level level) {
-    final levelProgress = _progressData!['levelProgress'] as Map<Level, dynamic>;
-    final progress = levelProgress[level];
-    final accuracyRate = progress['accuracyRate'] as double;
+    final levelProgressMap = _progressData!['levelProgress'] as Map<String, dynamic>;
+    final levelKey = level.name; // 'easy', 'normal', 'hard'
+    final progressJson = levelProgressMap[levelKey] as Map<String, dynamic>?;
+    
+    if (progressJson == null) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.grey[100],
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              level.displayName,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const Text(
+              '0.0%',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    
+    final totalAttempts = progressJson['totalAttempts'] as int? ?? 0;
+    final correctAnswers = progressJson['correctAnswers'] as int? ?? 0;
+    final accuracyRate = totalAttempts > 0 ? correctAnswers / totalAttempts : 0.0;
 
     return Container(
       padding: const EdgeInsets.all(16),

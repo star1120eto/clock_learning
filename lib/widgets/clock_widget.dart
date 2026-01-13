@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:clock_learning/widgets/clock_controller.dart';
 import 'package:clock_learning/widgets/clock_painter.dart';
+import 'package:clock_learning/models/level.dart';
 
 /// アナログ時計ウィジェット
 class ClockWidget extends StatefulWidget {
   final ClockController controller;
   final double size;
+  final Level level;
 
   const ClockWidget({
     super.key,
     required this.controller,
+    required this.level,
     this.size = 300.0,
   });
 
@@ -64,6 +67,7 @@ class _ClockWidgetState extends State<ClockWidget> {
           painter: ClockPainter(
             state: widget.controller.getCurrentState(),
             clockRadius: widget.size / 2,
+            level: widget.level,
           ),
         ),
       ),

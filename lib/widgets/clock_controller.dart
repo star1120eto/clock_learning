@@ -112,11 +112,11 @@ class ClockController {
     _isDragging = false;
 
     // スナップ処理
-    if (_level == Level.normal) {
+    if (_level == Level.easy || _level == Level.normal) {
+      // かんたんモードとふつうモードは5分ごとにスナップ
       _snapToFiveMinuteInterval();
-    } else if (_level == Level.easy) {
-      _snapToZero();
     }
+    // むずかしいレベルはスナップなし
 
     _state = _state.copyWith(
       interactionState: ClockInteractionState.idle,
@@ -182,11 +182,11 @@ class ClockController {
     
     // レベルに応じたスナップ
     int snappedMinute = minute;
-    if (_level == Level.easy) {
-      snappedMinute = 0;
-    } else if (_level == Level.normal) {
+    if (_level == Level.easy || _level == Level.normal) {
+      // かんたんモードとふつうモードは5分ごとにスナップ
       snappedMinute = _snapToFiveMinute(minute);
     }
+    // むずかしいレベルはドラッグ中は自由に動かせる
 
     // 時を計算（分針が1周したら時を進める）
     int hour = _state.hour;
@@ -218,12 +218,7 @@ class ClockController {
     return closestMinute;
   }
 
-  /// 0分にスナップ（かんたんレベル）
-  void _snapToZero() {
-    _updateState(_state.hour, 0);
-  }
-
-  /// 5分刻みにスナップ（ふつうレベル）
+  /// 5分刻みにスナップ（かんたんレベル・ふつうレベル）
   void _snapToFiveMinuteInterval() {
     final snappedMinute = _snapToFiveMinute(_state.minute);
     _updateState(_state.hour, snappedMinute);

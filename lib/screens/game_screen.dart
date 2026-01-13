@@ -50,11 +50,10 @@ class GameState extends ChangeNotifier {
       _recentProblems = _recentProblems.take(10).toList();
     }
 
-    // 時計を初期化
-    final targetTime = _currentProblem!.targetTime;
+    // 時計を初期化（12時0分から開始）
     clockController.initialize(
-      targetTime.hour,
-      targetTime.minute,
+      12,
+      0,
       level,
     );
 
@@ -166,18 +165,34 @@ class _GameScreenState extends State<GameScreen> {
               children: [
                 const SizedBox(height: 20),
                 // 問題文
-                Text(
-                  gameState.currentProblem!.questionText,
-                  style: const TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                  ),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'とけいをあわせてね！',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      gameState.currentProblem!.targetTime.hiraganaString,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 40),
                 // 時計ウィジェット
                 Center(
                   child: ClockWidget(
                     controller: gameState.clockController,
+                    level: widget.level,
                     size: 300,
                   ),
                 ),
@@ -192,7 +207,7 @@ class _GameScreenState extends State<GameScreen> {
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: SizedBox(
-                    width: 200,
+                    width: 240,
                     height: 80,
                     child: ElevatedButton(
                       onPressed: gameState.isChecking
@@ -208,11 +223,14 @@ class _GameScreenState extends State<GameScreen> {
                       child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.check, size: 32),
-                          SizedBox(width: 8),
-                          Text(
-                            'こたえをきめる',
-                            style: TextStyle(fontSize: 20),
+                          Icon(Icons.check, size: 28),
+                          SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              'こたえをきめる',
+                              style: TextStyle(fontSize: 18),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
                         ],
                       ),

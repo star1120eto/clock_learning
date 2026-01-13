@@ -31,7 +31,7 @@ class LevelSelectScreen extends StatelessWidget {
               Level.easy,
               Colors.blue,
               'かんたん',
-              '◯時をあわせる',
+              '◯じをあわせる',
             ),
             const SizedBox(height: 20),
             // ふつうレベル
@@ -40,7 +40,7 @@ class LevelSelectScreen extends StatelessWidget {
               Level.normal,
               Colors.orange,
               'ふつう',
-              '◯時◯分をあわせる\n（5分ごと）',
+              '◯じ◯ふんをあわせる\n（5ふんごと）',
             ),
             const SizedBox(height: 20),
             // むずかしいレベル
@@ -49,7 +49,7 @@ class LevelSelectScreen extends StatelessWidget {
               Level.hard,
               Colors.red,
               'むずかしい',
-              '◯時◯分をあわせる\n（1分ごと）',
+              '◯じ◯ふんをあわせる\n（1ふんごと）',
             ),
           ],
         ),

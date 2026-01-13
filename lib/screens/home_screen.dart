@@ -28,7 +28,7 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 60),
             // 学習開始ボタン
             SizedBox(
-              width: 200,
+              width: 280,
               height: 80,
               child: ElevatedButton(
                 onPressed: () {
@@ -47,7 +47,7 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
                 child: const Text(
-                  'がくしゅうをはじめる',
+                  'とけいをおぼえる',
                   style: TextStyle(fontSize: 20),
                 ),
               ),
@@ -55,7 +55,7 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 30),
             // 進捗確認ボタン
             SizedBox(
-              width: 200,
+              width: 280,
               height: 80,
               child: ElevatedButton(
                 onPressed: () {
@@ -74,7 +74,7 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
                 child: const Text(
-                  'しんちょくをみる',
+                  'すすみぐあいをみる',
                   style: TextStyle(fontSize: 20),
                 ),
               ),

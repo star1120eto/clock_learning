@@ -1,15 +1,18 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:clock_learning/widgets/clock_controller.dart';
+import 'package:clock_learning/models/level.dart';
 
 /// 時計を描画するCustomPainter
 class ClockPainter extends CustomPainter {
   final ClockState state;
   final double clockRadius;
+  final Level level;
 
   ClockPainter({
     required this.state,
     required this.clockRadius,
+    required this.level,
   });
 
   @override
@@ -20,6 +23,11 @@ class ClockPainter extends CustomPainter {
     // 時計盤の描画
     _drawClockFace(canvas, center, radius);
 
+    // むずかしいモードのときは1分ごとの目盛り線を描画
+    if (level == Level.hard) {
+      _drawMinuteMarks(canvas, center, radius);
+    }
+
     // 数字の描画（1〜12）
     _drawNumbers(canvas, center, radius);
 
@@ -28,6 +36,36 @@ class ClockPainter extends CustomPainter {
 
     // 分針の描画
     _drawMinuteHand(canvas, center, radius);
+  }
+
+  /// 1分ごとの目盛り線を描画（むずかしいモードのみ）
+  void _drawMinuteMarks(Canvas canvas, Offset center, double radius) {
+    final paint = Paint()
+      ..color = Colors.grey[400]!
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0;
+
+    for (int i = 0; i < 60; i++) {
+      // 各数字の位置（1〜12）の間には5本の線がある
+      // 数字の位置は i % 5 == 0 のとき（0, 5, 10, 15, ...）
+      // 数字の間は i % 5 != 0 のとき
+      if (i % 5 != 0) {
+        final angle = (i * 6.0 - 90.0) * (pi / 180); // 12時を上にするため-90度
+        final startRadius = radius * 0.85; // 目盛り線の開始位置
+        final endRadius = radius * 0.92; // 目盛り線の終了位置
+        
+        final startX = center.dx + cos(angle) * startRadius;
+        final startY = center.dy + sin(angle) * startRadius;
+        final endX = center.dx + cos(angle) * endRadius;
+        final endY = center.dy + sin(angle) * endRadius;
+        
+        canvas.drawLine(
+          Offset(startX, startY),
+          Offset(endX, endY),
+          paint,
+        );
+      }
+    }
   }
 
   /// 時計盤を描画
@@ -120,9 +158,10 @@ class ClockPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(ClockPainter oldDelegate) {
-    // 角度または操作状態が変更された場合のみ再描画
+    // 角度または操作状態、レベルが変更された場合のみ再描画
     return oldDelegate.state.hourAngle != state.hourAngle ||
         oldDelegate.state.minuteAngle != state.minuteAngle ||
-        oldDelegate.state.interactionState != state.interactionState;
+        oldDelegate.state.interactionState != state.interactionState ||
+        oldDelegate.level != level;
   }
 }
