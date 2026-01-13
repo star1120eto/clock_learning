@@ -30,7 +30,7 @@ class _ClockWidgetState extends State<ClockWidget> {
           localPosition,
           renderBox.size,
         );
-        setState(() {});
+        if (mounted) setState(() {});
       },
       onPanUpdate: (details) {
         final renderBox = context.findRenderObject() as RenderBox?;
@@ -41,11 +41,11 @@ class _ClockWidgetState extends State<ClockWidget> {
           localPosition,
           renderBox.size,
         );
-        setState(() {});
+        if (mounted) setState(() {});
       },
       onPanEnd: (_) {
         widget.controller.onTouchEnd();
-        setState(() {});
+        if (mounted) setState(() {});
       },
       child: Container(
         width: widget.size,

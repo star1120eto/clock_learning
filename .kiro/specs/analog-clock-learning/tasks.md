@@ -162,8 +162,8 @@ Use whichever pattern fits the work breakdown:
   - 60fps維持の最適化
   - _Requirements: 1.5, 4.4, 9.2_
 
-- [ ] 7. UI画面の実装
-- [ ] 7.1 HomeScreenの実装
+- [x] 7. UI画面の実装
+- [x] 7.1 HomeScreenの実装
   - アプリ起動時の初期画面
   - 学習開始ボタンと進捗確認ボタン
   - 大きなボタンとカラフルなデザイン
@@ -171,20 +171,20 @@ Use whichever pattern fits the work breakdown:
   - LevelSelectScreen、ProgressScreenへの遷移
   - _Requirements: 1.1, 8.1, 8.2, 8.3, 8.7, 8.8_
 
-- [ ] 7.2 LevelSelectScreenの実装
+- [x] 7.2 LevelSelectScreenの実装
   - 3つのレベルボタン（かんたん、ふつう、むずかしい）
   - 大きなカード型ボタンとアニメーション
   - レベル選択時のGameScreenへの遷移（Navigator引数）
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 8.1, 8.2, 8.3, 8.6, 8.8_
 
-- [ ] 7.3 GameScreenの基本実装
+- [x] 7.3 GameScreenの基本実装
   - Providerを使用したGameState管理
   - 問題文の表示（ひらがな表記）
   - ClockWidgetの表示
   - レベル情報の受け取りと問題生成
   - _Requirements: 1.1, 2.2, 3.1, 4.1, 5.1, 8.1, 8.2, 8.3, 8.7, 8.8_
 
-- [ ] 7.4 GameScreenの正解判定機能
+- [x] 7.4 GameScreenの正解判定機能
   - 回答確定ボタンの実装（位置、サイズ、ラベル）
   - ClockControllerから現在の時間取得
   - 正解・不正解の判定ロジック
@@ -193,18 +193,18 @@ Use whichever pattern fits the work breakdown:
   - 正解時計アニメーション（500ms）
   - _Requirements: 3.4, 3.5, 3.6, 4.5, 4.6, 4.7, 5.5, 5.6, 5.7, 8.1, 8.2, 8.3, 8.5, 8.7, 8.8_
 
-- [ ] 7.5 GameScreenの進捗記録機能
+- [x] 7.5 GameScreenの進捗記録機能
   - ProgressServiceへの進捗記録
   - 次の問題への自動遷移
   - 問題重複排除の実装
   - _Requirements: 3.7, 4.8, 5.8, 6.1, 6.2, 7.1, 7.2_
 
-- [ ] 7.6 GameScreenの音声フィードバック統合
+- [x] 7.6 GameScreenの音声フィードバック統合
   - AudioServiceとの連携
   - 正解・不正解時の音声再生
   - _Requirements: 3.5, 4.6, 5.6, 8.4_
 
-- [ ] 7.7 ProgressScreenの実装
+- [x] 7.7 ProgressScreenの実装
   - 進捗データの表示（完了レベル、正解率、学習日数）
   - 達成バッジやメダルの表示
   - 連続学習日数の表示
