@@ -22,32 +22,94 @@ class _ProgressScreenState extends State<ProgressScreen> {
   }
 
   Future<void> _loadProgress() async {
-    final storageService = await StorageService.create();
-    final progressService = ProgressService(storageService);
-    final progressData = await progressService.getProgress();
+    try {
+      final storageService = await StorageService.create();
+      final loadResult = await storageService.loadProgressData();
 
-    // LevelProgressをJSON形式に変換
-    final levelProgressJson = <String, dynamic>{};
-    for (final entry in progressData.levelProgress.entries) {
-      levelProgressJson[entry.key.name] = entry.value.toJson();
+      if (loadResult is ProgressLoadCorrupted) {
+        // データ破損時の処理
+        if (!mounted) return;
+        // ignore: use_build_context_synchronously
+        _showCorruptedDataDialog(context, storageService);
+        return;
+      }
+
+      final progressService = ProgressService(storageService);
+      final progressData = await progressService.getProgress();
+
+      // LevelProgressをJSON形式に変換
+      final levelProgressJson = <String, dynamic>{};
+      for (final entry in progressData.levelProgress.entries) {
+        levelProgressJson[entry.key.name] = entry.value.toJson();
+      }
+      
+      // AchievementをJSON形式に変換
+      final achievementsJson = progressData.achievements
+          .map((a) => a.toJson())
+          .toList();
+
+      if (mounted) {
+        setState(() {
+          _progressData = {
+            'totalCorrectAnswers': progressData.totalCorrectAnswers,
+            'totalQuestions': progressData.totalQuestions,
+            'accuracyRate': progressData.accuracyRate,
+            'consecutiveDays': progressData.consecutiveDays,
+            'levelProgress': levelProgressJson,
+            'achievements': achievementsJson,
+          };
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      // エラー発生時は空の進捗データを表示
+      if (mounted) {
+        setState(() {
+          _progressData = {
+            'totalCorrectAnswers': 0,
+            'totalQuestions': 0,
+            'accuracyRate': 0.0,
+            'consecutiveDays': 0,
+            'levelProgress': {},
+            'achievements': [],
+          };
+          _isLoading = false;
+        });
+      }
     }
-    
-    // AchievementをJSON形式に変換
-    final achievementsJson = progressData.achievements
-        .map((a) => a.toJson())
-        .toList();
+  }
 
-    setState(() {
-      _progressData = {
-        'totalCorrectAnswers': progressData.totalCorrectAnswers,
-        'totalQuestions': progressData.totalQuestions,
-        'accuracyRate': progressData.accuracyRate,
-        'consecutiveDays': progressData.consecutiveDays,
-        'levelProgress': levelProgressJson,
-        'achievements': achievementsJson,
-      };
-      _isLoading = false;
-    });
+  void _showCorruptedDataDialog(
+    BuildContext context,
+    StorageService storageService,
+  ) {
+    if (!mounted) return;
+    
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('データがこわれています'),
+        content: const Text(
+          'データがこわれています。リセットしますか？',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('キャンセル'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(dialogContext);
+              await storageService.clearAllData();
+              if (mounted) {
+                _loadProgress();
+              }
+            },
+            child: const Text('リセット'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override

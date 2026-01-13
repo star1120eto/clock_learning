@@ -231,14 +231,14 @@ Use whichever pattern fits the work breakdown:
   - Provider経由でのサービス提供
   - _Requirements: -_
 
-- [ ] 9. エラーハンドリングとエッジケース対応
-- [ ] 9.1 データ読み込みエラー処理
+- [x] 9. エラーハンドリングとエッジケース対応
+- [x] 9.1 データ読み込みエラー処理
   - ProgressLoadResultの処理（Success、Corrupted、FirstLaunch）
   - データ破損時のユーザー通知（ひらがな表記）
   - 初回起動時のオンボーディング表示
   - _Requirements: 7.1, 8.5_
 
-- [ ] 9.2 エッジケース対応
+- [x] 9.2 エッジケース対応
   - 12時0分の問題表示（「12時」と表示）
   - 時計盤中心タッチの無視
   - 画面外ドラッグの無効化

@@ -167,6 +167,22 @@ class ClockController {
   /// タッチ位置から分針角度を更新
   void _updateMinuteAngleFromPosition(Offset position, Size clockSize) {
     final center = Offset(clockSize.width / 2, clockSize.height / 2);
+    
+    // 画面外ドラッグの無効化：時計盤の範囲内に制限
+    final radius = min(clockSize.width, clockSize.height) / 2;
+    final distance = (position - center).distance;
+    
+    // 時計盤の範囲外の場合は最後の有効な位置を維持
+    if (distance > radius) {
+      // 時計盤の外周に制限
+      final angle = atan2(position.dy - center.dy, position.dx - center.dx);
+      final clampedPosition = Offset(
+        center.dx + cos(angle) * radius,
+        center.dy + sin(angle) * radius,
+      );
+      return _updateMinuteAngleFromPosition(clampedPosition, clockSize);
+    }
+    
     final delta = position - center;
     
     // 角度を計算（-π/2を加えて12時を0度にする）
