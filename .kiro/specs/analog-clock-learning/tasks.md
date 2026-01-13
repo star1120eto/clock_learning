@@ -65,8 +65,8 @@ Use whichever pattern fits the work breakdown:
   - レベル名のひらがな表記メソッド
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
 
-- [ ] 3. サービス層の実装
-- [ ] 3.1 (P) StorageServiceの実装
+- [x] 3. サービス層の実装
+- [x] 3.1 (P) StorageServiceの実装
   - SharedPreferencesを使用したデータ永続化
   - スキーマバージョン管理（v1）
   - ProgressLoadResult sealed classの実装（Success、Corrupted、FirstLaunch）
@@ -74,14 +74,14 @@ Use whichever pattern fits the work breakdown:
   - バックアップ・リストア機能（エクスポート/インポート）
   - _Requirements: 7.1, 10.1, 10.2, 10.4_
 
-- [ ] 3.2 (P) ProblemGeneratorサービスの実装
+- [x] 3.2 (P) ProblemGeneratorサービスの実装
   - レベルに応じた問題生成ロジック
   - 直近10問との重複チェック機能
   - 正解判定ロジック
   - 問題文のひらがな表記生成
   - _Requirements: 2.2, 2.3, 2.4, 2.5, 3.1, 4.1, 5.1_
 
-- [ ] 3.3 ProgressServiceの実装
+- [x] 3.3 ProgressServiceの実装
   - 進捗データの記録と更新
   - 正解率の計算
   - 学習日数の追跡
@@ -90,7 +90,7 @@ Use whichever pattern fits the work breakdown:
   - StorageServiceとの連携（3.1完了後に実装）
   - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5_
 
-- [ ] 3.4 (P) AudioServiceの実装
+- [x] 3.4 (P) AudioServiceの実装
   - audioplayersを使用した音声再生
   - 正解・不正解音声の再生
   - ミュート機能と音量制御
