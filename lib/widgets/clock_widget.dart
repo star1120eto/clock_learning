@@ -1,0 +1,72 @@
+import 'package:flutter/material.dart';
+import 'package:clock_learning/widgets/clock_controller.dart';
+import 'package:clock_learning/widgets/clock_painter.dart';
+
+/// アナログ時計ウィジェット
+class ClockWidget extends StatefulWidget {
+  final ClockController controller;
+  final double size;
+
+  const ClockWidget({
+    super.key,
+    required this.controller,
+    this.size = 300.0,
+  });
+
+  @override
+  State<ClockWidget> createState() => _ClockWidgetState();
+}
+
+class _ClockWidgetState extends State<ClockWidget> {
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onPanStart: (details) {
+        final renderBox = context.findRenderObject() as RenderBox?;
+        if (renderBox == null) return;
+
+        final localPosition = renderBox.globalToLocal(details.globalPosition);
+        widget.controller.onTouchStart(
+          localPosition,
+          renderBox.size,
+        );
+        setState(() {});
+      },
+      onPanUpdate: (details) {
+        final renderBox = context.findRenderObject() as RenderBox?;
+        if (renderBox == null) return;
+
+        final localPosition = renderBox.globalToLocal(details.globalPosition);
+        widget.controller.onDragUpdate(
+          localPosition,
+          renderBox.size,
+        );
+        setState(() {});
+      },
+      onPanEnd: (_) {
+        widget.controller.onTouchEnd();
+        setState(() {});
+      },
+      child: Container(
+        width: widget.size,
+        height: widget.size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: CustomPaint(
+          painter: ClockPainter(
+            state: widget.controller.getCurrentState(),
+            clockRadius: widget.size / 2,
+          ),
+        ),
+      ),
+    );
+  }
+}
