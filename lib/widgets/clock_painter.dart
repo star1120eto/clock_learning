@@ -137,15 +137,18 @@ class ClockPainter extends CustomPainter {
 
   /// 分針を描画
   void _drawMinuteHand(Canvas canvas, Offset center, double radius) {
-    // ドラッグ中は色を変更（視覚的フィードバック）
-    final color = state.interactionState == ClockInteractionState.dragging
-        ? Colors.blue
-        : Colors.black87;
+    // ドラッグ中は色と太さを変更（色覚多様性対応：色＋太さ変更の併用）
+    final isDragging = state.interactionState == ClockInteractionState.dragging;
+    final color = isDragging ? Colors.blue : Colors.black87;
+    // ドラッグ中は太さを1.5倍にして視覚的フィードバックを強化
+    final strokeWidth = isDragging 
+        ? radius * 0.03  // ドラッグ中は太く
+        : radius * 0.02; // 通常時
 
     final paint = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
-      ..strokeWidth = radius * 0.02 // 分針の太さ（時針より細く）
+      ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;
 
     final handLength = radius * 0.7; // 分針の長さ

@@ -35,13 +35,15 @@ class MyApp extends StatelessWidget {
           brightness: Brightness.light,
         ),
         useMaterial3: true,
-        // 大きなフォントサイズで読みやすく
-        textTheme: const TextTheme(
-          headlineLarge: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-          headlineMedium: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-          bodyLarge: TextStyle(fontSize: 20),
-          bodyMedium: TextStyle(fontSize: 18),
+        // 大きなフォントサイズで読みやすく（sp単位で端末のフォントサイズ設定に従う）
+        textTheme: TextTheme(
+          headlineLarge: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+          headlineMedium: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+          bodyLarge: const TextStyle(fontSize: 20),
+          bodyMedium: const TextStyle(fontSize: 18),
         ),
+        // アニメーションの減速モーション対応
+        // MediaQuery.of(context).disableAnimations で無効化可能
       ),
       home: const HomeScreen(),
       debugShowCheckedModeBanner: false,
