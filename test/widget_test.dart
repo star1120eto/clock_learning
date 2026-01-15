@@ -1,30 +1,30 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:clock_learning/main.dart';
+import 'package:clock_learning/screens/home_screen.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
+  testWidgets('ホーム画面が正しく表示される', (WidgetTester tester) async {
+    // アプリをビルド
     await tester.pumpWidget(const MyApp());
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // ホーム画面の要素を確認
+    expect(find.text('とけいをまなぼう'), findsOneWidget);
+    expect(find.text('とけいをおぼえる'), findsOneWidget);
+    expect(find.text('すすみぐあいをみる'), findsOneWidget);
+  });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+  testWidgets('ホーム画面からレベル選択画面へ遷移できる', (WidgetTester tester) async {
+    await tester.pumpWidget(const MyApp());
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // 「とけいをおぼえる」ボタンをタップ
+    await tester.tap(find.text('とけいをおぼえる'));
+    await tester.pumpAndSettle();
+
+    // レベル選択画面の要素を確認
+    expect(find.text('どのレベルにする？'), findsOneWidget);
+    expect(find.text('かんたん'), findsOneWidget);
+    expect(find.text('ふつう'), findsOneWidget);
+    expect(find.text('むずかしい'), findsOneWidget);
   });
 }
