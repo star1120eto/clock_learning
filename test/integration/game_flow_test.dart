@@ -1,11 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/services.dart';
 import 'package:clock_learning/models/level.dart';
-import 'package:clock_learning/models/problem.dart';
 import 'package:clock_learning/services/problem_generator_service.dart';
 import 'package:clock_learning/services/progress_service.dart';
 import 'package:clock_learning/services/storage_service.dart';
-import 'package:clock_learning/models/time.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {

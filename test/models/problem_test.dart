@@ -2,7 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:clock_learning/models/problem.dart';
 import 'package:clock_learning/models/level.dart';
 import 'package:clock_learning/models/five_minute_interval.dart';
-import 'package:clock_learning/models/time.dart';
 
 void main() {
   group('EasyProblem', () {

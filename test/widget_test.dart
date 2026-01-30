@@ -1,7 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:clock_learning/main.dart';
-import 'package:clock_learning/screens/home_screen.dart';
 
 void main() {
   testWidgets('ホーム画面が正しく表示される', (WidgetTester tester) async {
