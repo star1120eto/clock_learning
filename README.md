@@ -106,7 +106,18 @@ CCSDDは、Kiroスタイルのスペック駆動開発をCursor Composer上で�
 
 ### 参考ドキュメント
 
+#### 開発・ビルド
+
+- [BUILD_GUIDE.md](./BUILD_GUIDE.md) - ビルドガイド（各プラットフォーム向け）
 - [AGENTS.md](./AGENTS.md) - AI-DLCとSpec Driven Developmentの詳細
-- [ACCESSIBILITY_UIUX_CHECKLIST.md](./ACCESSIBILITY_UIUX_CHECKLIST.md) - アクセシビリティ・UXチェックリスト
+
+#### 品質・テスト
+
 - [GOLDEN_TEST_README.md](./GOLDEN_TEST_README.md) - ゴールデンテストガイド
-- [E2E_TEST_README.md](./E2E_TEST_README.md) - E2Eテストガイド
+- [E2E_TEST_README.md](./E2E_TEST_README.md) - E2Eテスト概要
+- [E2E_SETUP_GUIDE.md](./E2E_SETUP_GUIDE.md) - E2Eテスト環境構築
+- [E2E_EXECUTION_GUIDE.md](./E2E_EXECUTION_GUIDE.md) - E2Eテスト実行ガイド
+
+#### アクセシビリティ・UX
+
+- [ACCESSIBILITY_UIUX_CHECKLIST.md](./ACCESSIBILITY_UIUX_CHECKLIST.md) - アクセシビリティ・UXチェックリスト
