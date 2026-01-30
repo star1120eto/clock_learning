@@ -93,8 +93,15 @@ class GameState extends ChangeNotifier {
     _isChecking = false;
     notifyListeners();
 
-    // 1.5秒後に次の問題へ
-    await Future.delayed(const Duration(milliseconds: 1500));
+    // 正解のときだけ一定時間後に次の問題へ（不正解のときは「つぎのもんだい」タップで進む）
+    if (isCorrect) {
+      await Future.delayed(const Duration(milliseconds: 1500));
+      _generateNextProblem();
+    }
+  }
+
+  /// 次の問題へ進む（不正解表示中に「つぎのもんだい」タップで呼ばれる）
+  void goToNextProblem() {
     _generateNextProblem();
   }
 }
@@ -206,41 +213,55 @@ class _GameScreenState extends State<GameScreen> {
                     padding: const EdgeInsets.all(16.0),
                     child: _buildResultMessage(gameState.lastResult!),
                   ),
-                // 回答確定ボタン（最小80x80dp、タッチターゲットサイズ確保）
+                // 回答確定ボタン または 不正解時の「つぎのもんだい」ボタン（最小80x80dp）
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: SizedBox(
                     width: 240,
-                    height: 80, // 最小80dp（要件を満たす）
-                    child: ElevatedButton(
-                      onPressed: gameState.isChecking
-                          ? null
-                          : () => gameState.checkAnswer(),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        foregroundColor: Colors.white,
-                        // WCAG AA準拠：コントラスト比4.5:1以上（緑と白は十分なコントラスト）
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        // 最小タッチターゲットサイズを確保
-                        minimumSize: const Size(80, 80),
-                      ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.check, size: 28),
-                          SizedBox(width: 4),
-                          Flexible(
-                            child: Text(
-                              'こたえをきめる',
+                    height: 80,
+                    child: gameState.lastResult == false
+                        ? ElevatedButton(
+                            onPressed: () => gameState.goToNextProblem(),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Theme.of(context).colorScheme.primary,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              minimumSize: const Size(80, 80),
+                            ),
+                            child: const Text(
+                              'つぎのもんだい',
                               style: TextStyle(fontSize: 18),
-                              overflow: TextOverflow.ellipsis,
+                            ),
+                          )
+                        : ElevatedButton(
+                            onPressed: gameState.isChecking
+                                ? null
+                                : () => gameState.checkAnswer(),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              minimumSize: const Size(80, 80),
+                            ),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.check, size: 28),
+                                SizedBox(width: 4),
+                                Flexible(
+                                  child: Text(
+                                    'こたえをきめる',
+                                    style: TextStyle(fontSize: 18),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ],
-                      ),
-                    ),
                   ),
                 ),
               ],
