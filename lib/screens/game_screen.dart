@@ -8,6 +8,7 @@ import 'package:clock_learning/services/problem_generator_service.dart';
 import 'package:clock_learning/services/progress_service.dart';
 import 'package:clock_learning/services/audio_service.dart';
 import 'package:clock_learning/services/storage_service.dart';
+import 'package:clock_learning/utils/random_clock_start.dart';
 
 /// ゲーム画面の状態管理
 class GameState extends ChangeNotifier {
@@ -50,12 +51,9 @@ class GameState extends ChangeNotifier {
       _recentProblems = _recentProblems.take(10).toList();
     }
 
-    // 時計を初期化（12時0分から開始）
-    clockController.initialize(
-      12,
-      0,
-      level,
-    );
+    // 時計を初期化（レベルに応じたランダムな開始時刻）
+    final (:hour, :minute) = getRandomClockStart(level);
+    clockController.initialize(hour, minute, level);
 
     _isChecking = false;
     _lastResult = null;
