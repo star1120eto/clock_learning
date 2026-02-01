@@ -8,11 +8,14 @@ class ClockPainter extends CustomPainter {
   final ClockState state;
   final double clockRadius;
   final Level level;
+  /// 不正解表示時は true で文字盤を緑に描画する
+  final bool faceBackgroundGreen;
 
   ClockPainter({
     required this.state,
     required this.clockRadius,
     required this.level,
+    this.faceBackgroundGreen = false,
   });
 
   @override
@@ -71,7 +74,7 @@ class ClockPainter extends CustomPainter {
   /// 時計盤を描画
   void _drawClockFace(Canvas canvas, Offset center, double radius) {
     final paint = Paint()
-      ..color = Colors.white
+      ..color = faceBackgroundGreen ? Colors.green : Colors.white
       ..style = PaintingStyle.fill;
 
     canvas.drawCircle(center, radius, paint);
@@ -162,10 +165,11 @@ class ClockPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(ClockPainter oldDelegate) {
-    // 角度または操作状態、レベルが変更された場合のみ再描画
+    // 角度または操作状態、レベル、文字盤色が変更された場合に再描画
     return oldDelegate.state.hourAngle != state.hourAngle ||
         oldDelegate.state.minuteAngle != state.minuteAngle ||
         oldDelegate.state.interactionState != state.interactionState ||
-        oldDelegate.level != level;
+        oldDelegate.level != level ||
+        oldDelegate.faceBackgroundGreen != faceBackgroundGreen;
   }
 }

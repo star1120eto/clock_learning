@@ -198,12 +198,20 @@ class _GameScreenState extends State<GameScreen> {
                   ],
                 ),
                 const SizedBox(height: 40),
-                // 時計ウィジェット
+                // 時計ウィジェット（不正解時は正解時刻を表示し文字盤を緑にする）
                 Center(
                   child: ClockWidget(
                     controller: gameState.clockController,
                     level: widget.level,
                     size: 300,
+                    displayCorrectTime: gameState.lastResult == false,
+                    correctHour: gameState.lastResult == false
+                        ? gameState.currentProblem!.targetTime.hour
+                        : null,
+                    correctMinute: gameState.lastResult == false
+                        ? gameState.currentProblem!.targetTime.minute
+                        : null,
+                    faceBackgroundGreen: gameState.lastResult == false,
                   ),
                 ),
                 const Spacer(),

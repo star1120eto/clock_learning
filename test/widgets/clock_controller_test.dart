@@ -114,5 +114,25 @@ void main() {
         expect(controller.getCurrentMinute(), 59);
       });
     });
+
+    group('getStateForDisplay（wrong-answer-clock-display）', () {
+      test('getStateForDisplay が initialize で得る針の角度と一致する', () {
+        controller.initialize(3, 15, Level.easy);
+        final fromInitialize = controller.getCurrentState();
+        final fromDisplay = controller.getStateForDisplay(3, 15);
+        expect(fromDisplay.hour, fromInitialize.hour);
+        expect(fromDisplay.minute, fromInitialize.minute);
+        expect(fromDisplay.hourAngle, closeTo(fromInitialize.hourAngle, 0.001));
+        expect(fromDisplay.minuteAngle, closeTo(fromInitialize.minuteAngle, 0.001));
+        expect(fromDisplay.interactionState, ClockInteractionState.idle);
+      });
+
+      test('getStateForDisplay は内部状態を変更しない', () {
+        controller.initialize(12, 0, Level.easy);
+        controller.getStateForDisplay(6, 30);
+        expect(controller.getCurrentHour(), 12);
+        expect(controller.getCurrentMinute(), 0);
+      });
+    });
   });
 }
