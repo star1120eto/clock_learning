@@ -260,4 +260,41 @@ void main() {
       controller.dispose();
     });
   });
+
+  group('ClockWidget（wrong-answer-clock-display）', () {
+    testWidgets('不正解表示時は操作無効で正解時刻を表示する', (WidgetTester tester) async {
+      final controller = ClockController();
+      controller.initialize(1, 0, Level.easy); // ユーザーは1時0分に合わせたが不正解
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: ClockWidget(
+                controller: controller,
+                level: Level.easy,
+                size: 300,
+                displayCorrectTime: true,
+                correctHour: 3,
+                correctMinute: 15,
+                faceBackgroundGreen: true,
+              ),
+            ),
+          ),
+        ),
+      );
+
+      // 不正解表示時は ClockWidget の子に IgnorePointer があり操作無効
+      expect(find.byType(ClockWidget), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(ClockWidget),
+          matching: find.byType(IgnorePointer),
+        ),
+        findsOneWidget,
+      );
+
+      controller.dispose();
+    });
+  });
 }

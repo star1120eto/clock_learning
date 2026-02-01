@@ -136,6 +136,20 @@ class ClockController extends ChangeNotifier {
   /// 現在の分を取得（0〜59）
   int getCurrentMinute() => _state.minute;
 
+  /// 表示用の状態を返す（指定した時・分の針の位置。内部状態は変更しない）
+  /// hour: 1〜12, minute: 0〜59
+  ClockState getStateForDisplay(int hour, int minute) {
+    final hourAngle = _calculateHourAngle(hour, minute);
+    final minuteAngle = _calculateMinuteAngle(minute);
+    return ClockState(
+      hour: hour,
+      minute: minute,
+      hourAngle: hourAngle,
+      minuteAngle: minuteAngle,
+      interactionState: ClockInteractionState.idle,
+    );
+  }
+
   /// 状態を更新
   void _updateState(int hour, int minute) {
     final hourAngle = _calculateHourAngle(hour, minute);
