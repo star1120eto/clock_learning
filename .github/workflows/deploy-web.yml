@@ -31,7 +31,7 @@ jobs:
         run: flutter pub get
 
       - name: Build Flutter Web
-        run: flutter build web --release --base-href /clock_learning/
+        run: flutter build web --release --base-href /clock_learning/ --web-renderer html
 
       - name: Deploy to gh-pages
         if: github.event_name != 'pull_request'
