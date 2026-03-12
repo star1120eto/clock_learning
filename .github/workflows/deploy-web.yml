@@ -4,14 +4,16 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
   contents: write
-  pull-requests: write
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -31,18 +33,9 @@ jobs:
       - name: Build Flutter Web
         run: flutter build web --release --base-href /clock_learning/
 
-      - name: Update docs/ with build output
-        run: |
-          rm -rf docs
-          cp -r build/web docs
-
-      - name: Create Pull Request to update docs/
-        uses: peter-evans/create-pull-request@v7
+      - name: Deploy to gh-pages
+        if: github.event_name != 'pull_request'
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "chore: update web build for GitHub Pages"
-          title: "chore: update web build for GitHub Pages"
-          body: "Flutter webビルドの成果物で `docs/` を自動更新します。"
-          branch: chore/update-web-build
-          base: main
-          delete-branch: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build/web
