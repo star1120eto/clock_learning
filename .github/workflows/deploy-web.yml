@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   build-and-deploy:
@@ -35,10 +36,13 @@ jobs:
           rm -rf docs
           cp -r build/web docs
 
-      - name: Commit and push updated docs/
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add docs/
-          git diff --cached --quiet || git commit -m "chore: update web build for GitHub Pages"
-          git push origin main
+      - name: Create Pull Request to update docs/
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: update web build for GitHub Pages"
+          title: "chore: update web build for GitHub Pages"
+          body: "Flutter webビルドの成果物で `docs/` を自動更新します。"
+          branch: chore/update-web-build
+          base: main
+          delete-branch: true
