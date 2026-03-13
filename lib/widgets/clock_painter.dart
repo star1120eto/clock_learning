@@ -11,6 +11,21 @@ class ClockPainter extends CustomPainter {
   /// 不正解表示時は true で文字盤を緑に描画する
   final bool faceBackgroundGreen;
 
+  static const List<Color> _numberColors = [
+    Colors.red,
+    Colors.orange,
+    Colors.amber,
+    Color(0xFF4CAF50), // green
+    Colors.teal,
+    Colors.blue,
+    Colors.indigo,
+    Colors.purple,
+    Colors.pink,
+    Colors.deepOrange,
+    Color(0xFF00BCD4), // cyan
+    Color(0xFF8BC34A), // light green
+  ];
+
   ClockPainter({
     required this.state,
     required this.clockRadius,
@@ -39,6 +54,9 @@ class ClockPainter extends CustomPainter {
 
     // 分針の描画
     _drawMinuteHand(canvas, center, radius);
+
+    // 中心ドットの描画
+    _drawCenterDot(canvas, center, radius);
   }
 
   /// 1分ごとの目盛り線を描画（むずかしいモードのみ）
@@ -56,12 +74,12 @@ class ClockPainter extends CustomPainter {
         final angle = (i * 6.0 - 90.0) * (pi / 180); // 12時を上にするため-90度
         final startRadius = radius * 0.85; // 目盛り線の開始位置
         final endRadius = radius * 0.92; // 目盛り線の終了位置
-        
+
         final startX = center.dx + cos(angle) * startRadius;
         final startY = center.dy + sin(angle) * startRadius;
         final endX = center.dx + cos(angle) * endRadius;
         final endY = center.dy + sin(angle) * endRadius;
-        
+
         canvas.drawLine(
           Offset(startX, startY),
           Offset(endX, endY),
@@ -74,28 +92,32 @@ class ClockPainter extends CustomPainter {
   /// 時計盤を描画
   void _drawClockFace(Canvas canvas, Offset center, double radius) {
     final paint = Paint()
-      ..color = faceBackgroundGreen ? Colors.green : Colors.white
+      ..color = faceBackgroundGreen ? Colors.green : const Color(0xFFFFF9E6)
       ..style = PaintingStyle.fill;
 
     canvas.drawCircle(center, radius, paint);
 
-    // 時計盤の縁
+    // 時計盤の縁（レベル別カラー）
+    final Color borderColor;
+    switch (level) {
+      case Level.easy:
+        borderColor = Colors.blue;
+      case Level.normal:
+        borderColor = Colors.orange;
+      case Level.hard:
+        borderColor = Colors.red;
+    }
+
     final borderPaint = Paint()
-      ..color = Colors.grey[300]!
+      ..color = borderColor
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 4.0;
+      ..strokeWidth = 6.0;
 
     canvas.drawCircle(center, radius, borderPaint);
   }
 
   /// 数字（1〜12）を描画
   void _drawNumbers(Canvas canvas, Offset center, double radius) {
-    final textStyle = TextStyle(
-      fontSize: radius * 0.15,
-      fontWeight: FontWeight.bold,
-      color: Colors.black87,
-    );
-
     // TextPainterを再利用してメモリ効率を向上
     final textPainter = TextPainter(
       textAlign: TextAlign.center,
@@ -108,6 +130,12 @@ class ClockPainter extends CustomPainter {
       final numberRadius = radius * 0.75; // 数字は時計盤の75%の位置
       final x = center.dx + cos(angle) * numberRadius;
       final y = center.dy + sin(angle) * numberRadius;
+
+      final textStyle = TextStyle(
+        fontSize: radius * 0.15,
+        fontWeight: FontWeight.bold,
+        color: _numberColors[i - 1],
+      );
 
       textPainter.text = TextSpan(
         text: i.toString(),
@@ -124,9 +152,9 @@ class ClockPainter extends CustomPainter {
   /// 時針を描画
   void _drawHourHand(Canvas canvas, Offset center, double radius) {
     final paint = Paint()
-      ..color = Colors.black87
+      ..color = Colors.indigo
       ..style = PaintingStyle.stroke
-      ..strokeWidth = radius * 0.03 // 時針の太さ
+      ..strokeWidth = radius * 0.05 // 時針の太さ
       ..strokeCap = StrokeCap.round;
 
     final handLength = radius * 0.5; // 時針の長さ
@@ -142,16 +170,12 @@ class ClockPainter extends CustomPainter {
   void _drawMinuteHand(Canvas canvas, Offset center, double radius) {
     // ドラッグ中は色と太さを変更（色覚多様性対応：色＋太さ変更の併用）
     final isDragging = state.interactionState == ClockInteractionState.dragging;
-    final color = isDragging ? Colors.blue : Colors.black87;
-    // ドラッグ中は太さを1.5倍にして視覚的フィードバックを強化
-    final strokeWidth = isDragging 
-        ? radius * 0.03  // ドラッグ中は太く
-        : radius * 0.02; // 通常時
+    final color = isDragging ? Colors.blue : Colors.red;
 
     final paint = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
+      ..strokeWidth = radius * 0.03
       ..strokeCap = StrokeCap.round;
 
     final handLength = radius * 0.7; // 分針の長さ
@@ -161,6 +185,15 @@ class ClockPainter extends CustomPainter {
     final endY = center.dy + sin(angle) * handLength;
 
     canvas.drawLine(center, Offset(endX, endY), paint);
+  }
+
+  /// 中心ドットを描画
+  void _drawCenterDot(Canvas canvas, Offset center, double radius) {
+    final paint = Paint()
+      ..color = Colors.black87
+      ..style = PaintingStyle.fill;
+
+    canvas.drawCircle(center, radius * 0.04, paint);
   }
 
   @override
