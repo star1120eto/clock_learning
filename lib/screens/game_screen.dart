@@ -9,6 +9,7 @@ import 'package:clock_learning/services/progress_service.dart';
 import 'package:clock_learning/services/audio_service.dart';
 import 'package:clock_learning/services/storage_service.dart';
 import 'package:clock_learning/utils/random_clock_start.dart';
+import 'package:clock_learning/screens/result_screen.dart';
 
 /// ゲーム画面の状態管理
 class GameState extends ChangeNotifier {
@@ -18,10 +19,17 @@ class GameState extends ChangeNotifier {
   final ProgressService progressService;
   final AudioService audioService;
 
+  static const int maxQuestions = 5;
+  int _questionCount = 0;
+  int _correctCount = 0;
+  bool _isSessionComplete = false;
+
   Problem? _currentProblem;
   List<Problem> _recentProblems = [];
   bool _isChecking = false;
   bool? _lastResult;
+  List<String> _newlyEarnedBadgeNames = [];
+  List<String> get newlyEarnedBadgeNames => List.unmodifiable(_newlyEarnedBadgeNames);
 
   GameState({
     required this.level,
@@ -34,14 +42,22 @@ class GameState extends ChangeNotifier {
   Problem? get currentProblem => _currentProblem;
   bool get isChecking => _isChecking;
   bool? get lastResult => _lastResult;
+  int get questionCount => _questionCount;
+  int get correctCount => _correctCount;
+  int get incorrectCount => _questionCount - _correctCount;
+  bool get isSessionComplete => _isSessionComplete;
 
   /// ゲームを開始
   void startGame() {
+    _questionCount = 0;
+    _correctCount = 0;
+    _isSessionComplete = false;
     _generateNextProblem();
   }
 
   /// 次の問題を生成
   void _generateNextProblem() {
+    _questionCount++;
     _currentProblem = problemGenerator.generateProblem(
       level,
       recentProblems: _recentProblems,
@@ -78,6 +94,7 @@ class GameState extends ChangeNotifier {
     );
 
     _lastResult = isCorrect;
+    if (isCorrect) _correctCount++;
 
     // 音声フィードバック
     if (isCorrect) {
@@ -90,19 +107,44 @@ class GameState extends ChangeNotifier {
     await progressService.recordAnswer(level, isCorrect);
     await progressService.updateLearningDate();
 
+    // 新バッジ確認
+    final progressData = await progressService.getProgress();
+    final newBadges = progressData.achievements
+        .where((a) => a.unlockedAt.isAfter(DateTime.now().subtract(const Duration(seconds: 5))))
+        .map((a) => a.name)
+        .toList();
+    if (newBadges.isNotEmpty) {
+      _newlyEarnedBadgeNames = newBadges;
+    }
+
     _isChecking = false;
     notifyListeners();
 
     // 正解のときだけ一定時間後に次の問題へ（不正解のときは「つぎのもんだい」タップで進む）
     if (isCorrect) {
       await Future.delayed(const Duration(milliseconds: 1500));
-      _generateNextProblem();
+      if (_questionCount >= maxQuestions) {
+        _isSessionComplete = true;
+        notifyListeners();
+      } else {
+        _generateNextProblem();
+      }
     }
+  }
+
+  /// 新たに獲得したバッジ名のリストをクリア
+  void clearNewBadges() {
+    _newlyEarnedBadgeNames = [];
   }
 
   /// 次の問題へ進む（不正解表示中に「つぎのもんだい」タップで呼ばれる）
   void goToNextProblem() {
-    _generateNextProblem();
+    if (_questionCount >= maxQuestions) {
+      _isSessionComplete = true;
+      notifyListeners();
+    } else {
+      _generateNextProblem();
+    }
   }
 }
 
@@ -171,9 +213,60 @@ class _GameScreenState extends State<GameScreen> {
         ),
         body: Consumer<GameState>(
           builder: (context, gameState, _) {
+            if (gameState.isSessionComplete) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ResultScreen(
+                        correctCount: gameState.correctCount,
+                        incorrectCount: gameState.incorrectCount,
+                        level: widget.level,
+                      ),
+                    ),
+                  );
+                }
+              });
+            }
+            if (gameState.newlyEarnedBadgeNames.isNotEmpty) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) {
+                  for (final badgeName in gameState.newlyEarnedBadgeNames) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Row(
+                          children: [
+                            const Icon(Icons.star, color: Colors.amber),
+                            const SizedBox(width: 8),
+                            Text('バッジかくとく！「$badgeName」'),
+                          ],
+                        ),
+                        duration: const Duration(seconds: 3),
+                        backgroundColor: Colors.amber[800],
+                      ),
+                    );
+                  }
+                  gameState.clearNewBadges();
+                }
+              });
+            }
             return Column(
               children: [
                 const SizedBox(height: 20),
+                // 問題番号
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text(
+                        '${gameState.questionCount} / ${GameState.maxQuestions} もん',
+                        style: const TextStyle(fontSize: 18, color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                ),
                 // 問題文
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
