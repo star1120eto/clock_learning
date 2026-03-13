@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:clock_learning/screens/level_select_screen.dart';
 import 'package:clock_learning/screens/progress_screen.dart';
+import 'package:clock_learning/screens/free_play_screen.dart';
 
 /// アプリのホーム画面
 class HomeScreen extends StatelessWidget {
@@ -75,6 +76,33 @@ class HomeScreen extends StatelessWidget {
                 ),
                 child: const Text(
                   'すすみぐあいをみる',
+                  style: TextStyle(fontSize: 20),
+                ),
+              ),
+            ),
+            const SizedBox(height: 30),
+            // じゆうにさわるボタン
+            SizedBox(
+              width: 280,
+              height: 80,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const FreePlayScreen(),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.purple,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+                child: const Text(
+                  'じゆうにさわる',
                   style: TextStyle(fontSize: 20),
                 ),
               ),
