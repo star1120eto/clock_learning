@@ -38842,33 +38842,35 @@ if(p<q*0.2)return!1
 if(p>=q*0.8&&p<=q)return!0
 return p<=q}}
 A.Dw.prototype={
-aE(a,b){var s,r,q,p,o=this,n=b.a,m=n/2,l=b.b,k=l/2,j=new A.o(m,k),i=Math.min(n,l)/2
-o.Xj(a,j,i)
-if(o.d===B.du)o.Xk(a,j,i)
-o.Xl(a,j,i)
+aE(a,b){var s,r,q,p,o,n,m=this,l=b.a,k=l/2,j=b.b,i=j/2,h=new A.o(k,i),g=Math.min(l,j)/2
+m.Xj(a,h,g)
+if(m.d===B.du)m.Xk(a,h,g)
+m.Xl(a,h,g)
 $.ag()
 s=A.bf()
 s.r=B.qU.gp(0)
 s.b=B.aE
-s.c=i*0.05
+s.c=g*0.05
 s.d=B.jx
-r=i*0.5
-n=o.b
-q=n.c-1.5707963267948966
-a.B5(j,new A.o(m+Math.cos(q)*r,k+Math.sin(q)*r),s)
-p=n.e===B.kE?B.aC:B.ar
+r=g*0.5
+l=m.b
+q=l.c-1.5707963267948966
+a.B5(h,new A.o(k+Math.cos(q)*r,i+Math.sin(q)*r),s)
+p=l.e===B.kE
+o=p?B.aC:B.ar
+n=p?g*0.04:g*0.03
 s=A.bf()
-s.r=p.gp(0)
+s.r=o.gp(0)
 s.b=B.aE
-s.c=i*0.03
+s.c=n
 s.d=B.jx
-r=i*0.7
-q=n.d-1.5707963267948966
-a.B5(j,new A.o(m+Math.cos(q)*r,k+Math.sin(q)*r),s)
+r=g*0.7
+q=l.d-1.5707963267948966
+a.B5(h,new A.o(k+Math.cos(q)*r,i+Math.sin(q)*r),s)
 s=A.bf()
 s.r=B.z.gp(0)
 s.b=B.aK
-a.j1(j,i*0.04,s)},
+a.j1(h,g*0.04,s)},
 Xk(a,b,c){var s,r,q,p,o,n,m,l,k,j,i,h,g
 $.ag()
 s=A.bf()
