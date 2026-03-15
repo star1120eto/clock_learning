@@ -61,7 +61,7 @@ class _ClockReadingScreenState extends State<ClockReadingScreen> {
       Level.normal => (r.nextInt(12)) * 5,
       Level.hard => r.nextInt(60),
     };
-    _clockController.initialize(_targetHour, _targetMinute, Level.hard);
+    _clockController.initialize(_targetHour, _targetMinute, widget.level);
     setState(() {
       _hourInput = '';
       _minuteInput = '';
@@ -103,6 +103,8 @@ class _ClockReadingScreenState extends State<ClockReadingScreen> {
 
   Future<void> _checkAnswer() async {
     if (_isChecked) return;
+    if (_hourInput.isEmpty) return;
+    if (widget.level != Level.easy && _minuteInput.isEmpty) return;
     final hour = int.tryParse(_hourInput) ?? -1;
     final minute = int.tryParse(_minuteInput.isEmpty ? '0' : _minuteInput) ?? -1;
     final isCorrect = hour == _targetHour &&
@@ -206,7 +208,7 @@ class _ClockReadingScreenState extends State<ClockReadingScreen> {
           Center(
             child: ClockWidget(
               controller: _clockController,
-              level: Level.hard,
+              level: widget.level,
               size: 250,
               displayCorrectTime: true,
               correctHour: _targetHour,
