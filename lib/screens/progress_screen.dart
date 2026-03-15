@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:clock_learning/models/achievement.dart';
 import 'package:clock_learning/models/level.dart';
 import 'package:clock_learning/services/progress_service.dart';
 import 'package:clock_learning/services/storage_service.dart';
@@ -281,41 +282,57 @@ class _ProgressScreenState extends State<ProgressScreen> {
   }
 
   Widget _buildAchievements() {
-    final achievements = _progressData!['achievements'] as List<dynamic>;
-    
-    if (achievements.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Text(
-          'まだバッジはありません',
-          style: TextStyle(fontSize: 18),
-        ),
-      );
-    }
+    final earnedList = _progressData!['achievements'] as List<dynamic>;
+    final earnedIds = earnedList.map((a) => a['id'] as String).toSet();
 
     return Wrap(
       spacing: 16,
       runSpacing: 16,
-      children: achievements.map((achievement) {
-        return Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Colors.amber.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: Colors.amber, width: 2),
-          ),
-          child: Column(
-            children: [
-              const Icon(Icons.star, size: 40, color: Colors.amber),
-              const SizedBox(height: 8),
-              Text(
-                achievement['name'] as String,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
+      children: AchievementDefinition.all.map((def) {
+        final isEarned = earnedIds.contains(def.id);
+        return Opacity(
+          opacity: isEarned ? 1.0 : 0.3,
+          child: Container(
+            width: 140,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: isEarned
+                  ? Colors.amber.withValues(alpha: 0.2)
+                  : Colors.grey.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: isEarned ? Colors.amber : Colors.grey,
+                width: 2,
               ),
-            ],
+            ),
+            child: Column(
+              children: [
+                Icon(
+                  isEarned ? Icons.star : Icons.star_border,
+                  size: 40,
+                  color: isEarned ? Colors.amber : Colors.grey,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  def.name,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: isEarned ? Colors.black87 : Colors.grey,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  def.description,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: isEarned ? Colors.black54 : Colors.grey,
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       }).toList(),

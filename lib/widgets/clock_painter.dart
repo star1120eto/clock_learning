@@ -171,7 +171,6 @@ class ClockPainter extends CustomPainter {
     // ドラッグ中は色と太さを変更（色覚多様性対応：色＋太さ変更の併用）
     final isDragging = state.interactionState == ClockInteractionState.dragging;
     final color = isDragging ? Colors.blue : Colors.red;
-
     final strokeWidth = isDragging ? radius * 0.04 : radius * 0.03;
 
     final paint = Paint()
