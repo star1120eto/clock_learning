@@ -172,10 +172,12 @@ class ClockPainter extends CustomPainter {
     final isDragging = state.interactionState == ClockInteractionState.dragging;
     final color = isDragging ? Colors.blue : Colors.red;
 
+    final strokeWidth = isDragging ? radius * 0.04 : radius * 0.03;
+
     final paint = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
-      ..strokeWidth = radius * 0.03
+      ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;
 
     final handLength = radius * 0.7; // 分針の長さ
