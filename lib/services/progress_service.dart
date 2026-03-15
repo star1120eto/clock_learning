@@ -11,8 +11,8 @@ class ProgressService {
 
   ProgressService(this._storageService);
 
-  /// 進捗データを記録
-  Future<void> recordAnswer(Level level, bool isCorrect) async {
+  /// 進捗データを記録し、新たに獲得したバッジのリストを返す
+  Future<List<Achievement>> recordAnswer(Level level, bool isCorrect) async {
     final progressData = await getProgress();
     
     // レベル別の進捗を更新
@@ -53,6 +53,7 @@ class ProgressService {
     // 保存
     await _storageService.saveProgressData(finalProgressData);
     _cachedProgressData = finalProgressData;
+    return newAchievements;
   }
 
   /// 進捗データを取得

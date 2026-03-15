@@ -90,10 +90,9 @@ class _ClockReadingScreenState extends State<ClockReadingScreen> {
           // 1桁の時に次の数字が12を超えるなら自動でふん側へ移動して入力
           if (widget.level != Level.easy) {
             _activeField = _InputField.minute;
-            final mNext = digit;
-            final mVal = int.tryParse(mNext) ?? 0;
+            final mVal = int.tryParse(digit) ?? 0;
             if (mVal <= 59) {
-              _minuteInput = mNext;
+              _minuteInput = digit;
             }
           }
         }
@@ -184,8 +183,8 @@ class _ClockReadingScreenState extends State<ClockReadingScreen> {
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.pop(context); // close dialog
-              Navigator.pop(context); // go back
+              Navigator.pop(context);
+              Navigator.pop(context);
             },
             child: const Text('もどる'),
           ),
@@ -232,7 +231,6 @@ class _ClockReadingScreenState extends State<ClockReadingScreen> {
           ),
           const Text('なんじなんぷん？', style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
           const SizedBox(height: 16),
-          // Clock (read-only)
           Center(
             child: ClockWidget(
               controller: _clockController,
@@ -244,7 +242,6 @@ class _ClockReadingScreenState extends State<ClockReadingScreen> {
             ),
           ),
           const SizedBox(height: 20),
-          // Answer display
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -271,7 +268,6 @@ class _ClockReadingScreenState extends State<ClockReadingScreen> {
               ],
             ],
           ),
-          // Result message
           if (_lastResult != null)
             Padding(
               padding: const EdgeInsets.all(8),
@@ -285,10 +281,8 @@ class _ClockReadingScreenState extends State<ClockReadingScreen> {
               ),
             ),
           const Spacer(),
-          // Numpad
           _buildNumpad(),
           const SizedBox(height: 16),
-          // Check / Next button
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 8),
             child: SizedBox(

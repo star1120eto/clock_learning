@@ -35,7 +35,6 @@ class LevelSelectScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 40),
-              // かんたんレベル
               _buildLevelCard(
                 context,
                 Level.easy,
@@ -45,7 +44,6 @@ class LevelSelectScreen extends StatelessWidget {
                 isReading,
               ),
               const SizedBox(height: 20),
-              // ふつうレベル
               _buildLevelCard(
                 context,
                 Level.normal,
@@ -55,7 +53,6 @@ class LevelSelectScreen extends StatelessWidget {
                 isReading,
               ),
               const SizedBox(height: 20),
-              // むずかしいレベル
               _buildLevelCard(
                 context,
                 Level.hard,
