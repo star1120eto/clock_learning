@@ -18,26 +18,16 @@ class _FreePlayScreenState extends State<FreePlayScreen> {
   void initState() {
     super.initState();
     _controller.initialize(12, 0, Level.hard);
-    _controller.addListener(_onClockChanged);
   }
 
   @override
   void dispose() {
-    _controller.removeListener(_onClockChanged);
     _controller.dispose();
     super.dispose();
   }
 
-  void _onClockChanged() {
-    setState(() {});
-  }
-
   @override
   Widget build(BuildContext context) {
-    final hour = _controller.getCurrentHour();
-    final minute = _controller.getCurrentMinute();
-    final timeText = '$hour時${minute == 0 ? 'ちょうど' : '$minute分'}';
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('じゆうにさわる'),
@@ -59,12 +49,20 @@ class _FreePlayScreenState extends State<FreePlayScreen> {
             ),
           ),
           const SizedBox(height: 40),
-          Text(
-            timeText,
-            style: const TextStyle(
-              fontSize: 36,
-              fontWeight: FontWeight.bold,
-            ),
+          ListenableBuilder(
+            listenable: _controller,
+            builder: (context, _) {
+              final hour = _controller.getCurrentHour();
+              final minute = _controller.getCurrentMinute();
+              final timeText = '$hour時${minute == 0 ? 'ちょうど' : '$minute分'}';
+              return Text(
+                timeText,
+                style: const TextStyle(
+                  fontSize: 36,
+                  fontWeight: FontWeight.bold,
+                ),
+              );
+            },
           ),
           const SizedBox(height: 16),
           const Text(
