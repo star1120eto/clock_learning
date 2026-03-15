@@ -103,18 +103,12 @@ class GameState extends ChangeNotifier {
       await audioService.playIncorrectSound();
     }
 
-    // 進捗を記録
-    await progressService.recordAnswer(level, isCorrect);
+    // 進捗を記録し、新バッジを取得
+    final newAchievements = await progressService.recordAnswer(level, isCorrect);
     await progressService.updateLearningDate();
 
-    // 新バッジ確認
-    final progressData = await progressService.getProgress();
-    final newBadges = progressData.achievements
-        .where((a) => a.unlockedAt.isAfter(DateTime.now().subtract(const Duration(seconds: 5))))
-        .map((a) => a.name)
-        .toList();
-    if (newBadges.isNotEmpty) {
-      _newlyEarnedBadgeNames = newBadges;
+    if (newAchievements.isNotEmpty) {
+      _newlyEarnedBadgeNames = newAchievements.map((a) => a.name).toList();
     }
 
     _isChecking = false;

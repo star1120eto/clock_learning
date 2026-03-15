@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:clock_learning/models/level.dart';
+import 'package:clock_learning/screens/game_screen.dart';
 
 /// 結果画面（5問終了後）
 class ResultScreen extends StatelessWidget {
@@ -118,8 +119,12 @@ class ResultScreen extends StatelessWidget {
                   height: 64,
                   child: ElevatedButton(
                     onPressed: () {
-                      // Replace ResultScreen with a new GameScreen
-                      Navigator.pop(context);
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => GameScreen(level: level),
+                        ),
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
