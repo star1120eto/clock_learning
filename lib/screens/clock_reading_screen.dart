@@ -7,6 +7,8 @@ import 'package:clock_learning/services/audio_service.dart';
 import 'package:clock_learning/services/progress_service.dart';
 import 'package:clock_learning/services/storage_service.dart';
 
+enum _InputField { hour, minute }
+
 /// よみとりモード画面
 class ClockReadingScreen extends StatefulWidget {
   final Level level;
@@ -34,6 +36,7 @@ class _ClockReadingScreenState extends State<ClockReadingScreen> {
   String _minuteInput = '';
   bool? _lastResult;
   bool _isChecked = false;
+  _InputField _activeField = _InputField.hour;
 
   @override
   void initState() {
@@ -61,29 +64,43 @@ class _ClockReadingScreenState extends State<ClockReadingScreen> {
       Level.normal => (r.nextInt(12)) * 5,
       Level.hard => r.nextInt(60),
     };
-    _clockController.initialize(_targetHour, _targetMinute, Level.hard);
+    _clockController.initialize(_targetHour, _targetMinute, widget.level);
     setState(() {
       _hourInput = '';
       _minuteInput = '';
       _lastResult = null;
       _isChecked = false;
+      _activeField = _InputField.hour;
     });
   }
 
   void _onNumberTap(String digit) {
     if (_isChecked) return;
     setState(() {
-      // Fill hour first (max 2 digits), then minute
-      if (_hourInput.length < 2) {
+      if (_activeField == _InputField.hour) {
         final next = _hourInput + digit;
         final val = int.tryParse(next) ?? 0;
-        if (val <= 12) {
+        if (val <= 12 && val > 0) {
           _hourInput = next;
+          // 2桁になったら自動でふん側へ移動
+          if (_hourInput.length == 2 && widget.level != Level.easy) {
+            _activeField = _InputField.minute;
+          }
+        } else if (_hourInput.length == 1) {
+          // 1桁の時に次の数字が12を超えるなら自動でふん側へ移動して入力
+          if (widget.level != Level.easy) {
+            _activeField = _InputField.minute;
+            final mVal = int.tryParse(digit) ?? 0;
+            if (mVal <= 59) {
+              _minuteInput = digit;
+            }
+          }
         }
-      } else if (_minuteInput.length < 2) {
+      } else {
+        // ふん側への入力
         final next = _minuteInput + digit;
         final val = int.tryParse(next) ?? 0;
-        if (val <= 59) {
+        if (val <= 59 && _minuteInput.length < 2) {
           _minuteInput = next;
         }
       }
@@ -93,16 +110,28 @@ class _ClockReadingScreenState extends State<ClockReadingScreen> {
   void _onDelete() {
     if (_isChecked) return;
     setState(() {
-      if (_minuteInput.isNotEmpty) {
-        _minuteInput = _minuteInput.substring(0, _minuteInput.length - 1);
-      } else if (_hourInput.isNotEmpty) {
-        _hourInput = _hourInput.substring(0, _hourInput.length - 1);
+      if (_activeField == _InputField.minute) {
+        if (_minuteInput.isNotEmpty) {
+          _minuteInput = _minuteInput.substring(0, _minuteInput.length - 1);
+        } else {
+          // ふん側が空のときはじ側へ戻ってじ側を削除
+          _activeField = _InputField.hour;
+          if (_hourInput.isNotEmpty) {
+            _hourInput = _hourInput.substring(0, _hourInput.length - 1);
+          }
+        }
+      } else {
+        if (_hourInput.isNotEmpty) {
+          _hourInput = _hourInput.substring(0, _hourInput.length - 1);
+        }
       }
     });
   }
 
   Future<void> _checkAnswer() async {
     if (_isChecked) return;
+    if (_hourInput.isEmpty) return;
+    if (widget.level != Level.easy && _minuteInput.isEmpty) return;
     final hour = int.tryParse(_hourInput) ?? -1;
     final minute = int.tryParse(_minuteInput.isEmpty ? '0' : _minuteInput) ?? -1;
     final isCorrect = hour == _targetHour &&
@@ -154,8 +183,8 @@ class _ClockReadingScreenState extends State<ClockReadingScreen> {
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.pop(context); // close dialog
-              Navigator.pop(context); // go back
+              Navigator.pop(context);
+              Navigator.pop(context);
             },
             child: const Text('もどる'),
           ),
@@ -202,11 +231,10 @@ class _ClockReadingScreenState extends State<ClockReadingScreen> {
           ),
           const Text('なんじなんぷん？', style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
           const SizedBox(height: 16),
-          // Clock (read-only)
           Center(
             child: ClockWidget(
               controller: _clockController,
-              level: Level.hard,
+              level: widget.level,
               size: 250,
               displayCorrectTime: true,
               correctHour: _targetHour,
@@ -214,23 +242,37 @@ class _ClockReadingScreenState extends State<ClockReadingScreen> {
             ),
           ),
           const SizedBox(height: 20),
-          // Answer display
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _inputBox(_hourInput, 'じ', isWrong: _lastResult == false),
+              GestureDetector(
+                onTap: _isChecked ? null : () => setState(() => _activeField = _InputField.hour),
+                child: _inputBox(
+                  _hourInput,
+                  'じ',
+                  isWrong: _lastResult == false,
+                  isActive: !_isChecked && _activeField == _InputField.hour,
+                ),
+              ),
               if (showMinute) ...[
                 const SizedBox(width: 8),
-                _inputBox(_minuteInput, 'ふん', isWrong: _lastResult == false),
+                GestureDetector(
+                  onTap: _isChecked ? null : () => setState(() => _activeField = _InputField.minute),
+                  child: _inputBox(
+                    _minuteInput,
+                    'ふん',
+                    isWrong: _lastResult == false,
+                    isActive: !_isChecked && _activeField == _InputField.minute,
+                  ),
+                ),
               ],
             ],
           ),
-          // Result message
           if (_lastResult != null)
             Padding(
               padding: const EdgeInsets.all(8),
               child: Text(
-                _lastResult! ? 'せいかい！' : 'まちがい… こたえは $_targetHour 時${showMinute ? " $_targetMinute 分" : ""}',
+                _lastResult! ? 'せいかい！' : 'まちがい… こたえは $_targetHour じ${showMinute ? " $_targetMinute ふん" : ""}',
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
@@ -239,10 +281,8 @@ class _ClockReadingScreenState extends State<ClockReadingScreen> {
               ),
             ),
           const Spacer(),
-          // Numpad
           _buildNumpad(),
           const SizedBox(height: 16),
-          // Check / Next button
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 8),
             child: SizedBox(
@@ -274,7 +314,20 @@ class _ClockReadingScreenState extends State<ClockReadingScreen> {
     );
   }
 
-  Widget _inputBox(String value, String unit, {bool isWrong = false}) {
+  Widget _inputBox(String value, String unit, {bool isWrong = false, bool isActive = false}) {
+    final Color borderColor;
+    final double borderWidth;
+    if (isWrong) {
+      borderColor = Colors.red;
+      borderWidth = 2;
+    } else if (isActive) {
+      borderColor = Colors.orange;
+      borderWidth = 3;
+    } else {
+      borderColor = Colors.blue;
+      borderWidth = 2;
+    }
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -283,15 +336,12 @@ class _ClockReadingScreenState extends State<ClockReadingScreen> {
           height: 56,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            border: Border.all(
-              color: isWrong ? Colors.red : Colors.blue,
-              width: 2,
-            ),
+            border: Border.all(color: borderColor, width: borderWidth),
             borderRadius: BorderRadius.circular(8),
-            color: Colors.white,
+            color: isActive ? Colors.orange.withValues(alpha: 0.08) : Colors.white,
           ),
           child: Text(
-            value.isEmpty ? '' : value,
+            value,
             style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
           ),
         ),

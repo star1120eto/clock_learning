@@ -10,7 +10,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('時計学習アプリ'),
+        title: const Text('とけいがくしゅう'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: Center(
@@ -26,7 +26,7 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 60),
-            // 学習開始ボタン
+            // とけいをよむボタン
             SizedBox(
               width: 280,
               height: 80,
@@ -35,7 +35,34 @@ class HomeScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const LevelSelectScreen(),
+                      builder: (_) => const LevelSelectScreen(mode: LevelSelectMode.reading),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.teal,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+                child: const Text(
+                  'とけいをよむ',
+                  style: TextStyle(fontSize: 20),
+                ),
+              ),
+            ),
+            const SizedBox(height: 30),
+            // とけいをあわせるボタン
+            SizedBox(
+              width: 280,
+              height: 80,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const LevelSelectScreen(mode: LevelSelectMode.game),
                     ),
                   );
                 },
@@ -47,7 +74,7 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
                 child: const Text(
-                  'とけいをおぼえる',
+                  'とけいをあわせる',
                   style: TextStyle(fontSize: 20),
                 ),
               ),
