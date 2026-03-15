@@ -67,9 +67,13 @@ class GameState extends ChangeNotifier {
       _recentProblems = _recentProblems.take(10).toList();
     }
 
-    // 時計を初期化（レベルに応じたランダムな開始時刻）
-    final (:hour, :minute) = getRandomClockStart(level);
-    clockController.initialize(hour, minute, level);
+    // 時計を初期化（レベルに応じたランダムな開始時刻、正解と一致しないよう再生成）
+    ({int hour, int minute}) start;
+    do {
+      start = getRandomClockStart(level);
+    } while (start.hour == _currentProblem!.targetTime.hour &&
+             start.minute == _currentProblem!.targetTime.minute);
+    clockController.initialize(start.hour, start.minute, level);
 
     _isChecking = false;
     _lastResult = null;
