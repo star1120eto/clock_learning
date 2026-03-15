@@ -1,57 +1,72 @@
 import 'package:flutter/material.dart';
 import 'package:clock_learning/models/level.dart';
 import 'package:clock_learning/screens/game_screen.dart';
+import 'package:clock_learning/screens/clock_reading_screen.dart';
+
+enum LevelSelectMode { game, reading }
 
 /// レベル選択画面
 class LevelSelectScreen extends StatelessWidget {
-  const LevelSelectScreen({super.key});
+  final LevelSelectMode mode;
+
+  const LevelSelectScreen({super.key, required this.mode});
 
   @override
   Widget build(BuildContext context) {
+    final isReading = mode == LevelSelectMode.reading;
+    final title = isReading ? 'とけいをよむ' : 'とけいをあわせる';
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('レベルをえらんでね'),
+        title: Text(title),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              'どのレベルにする？',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
+      body: SingleChildScrollView(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const SizedBox(height: 40),
+              const Text(
+                'どのレベルにする？',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            const SizedBox(height: 40),
-            // かんたんレベル
-            _buildLevelCard(
-              context,
-              Level.easy,
-              Colors.blue,
-              'かんたん',
-              '◯じをあわせる',
-            ),
-            const SizedBox(height: 20),
-            // ふつうレベル
-            _buildLevelCard(
-              context,
-              Level.normal,
-              Colors.orange,
-              'ふつう',
-              '◯じ◯ふんをあわせる\n（5ふんごと）',
-            ),
-            const SizedBox(height: 20),
-            // むずかしいレベル
-            _buildLevelCard(
-              context,
-              Level.hard,
-              Colors.red,
-              'むずかしい',
-              '◯じ◯ふんをあわせる\n（1ふんごと）',
-            ),
-          ],
+              const SizedBox(height: 40),
+              // かんたんレベル
+              _buildLevelCard(
+                context,
+                Level.easy,
+                Colors.blue,
+                'かんたん',
+                isReading ? '◯じをよむ' : '◯じをあわせる',
+                isReading,
+              ),
+              const SizedBox(height: 20),
+              // ふつうレベル
+              _buildLevelCard(
+                context,
+                Level.normal,
+                Colors.orange,
+                'ふつう',
+                isReading ? '◯じ◯ふんをよむ\n（5ふんごと）' : '◯じ◯ふんをあわせる\n（5ふんごと）',
+                isReading,
+              ),
+              const SizedBox(height: 20),
+              // むずかしいレベル
+              _buildLevelCard(
+                context,
+                Level.hard,
+                Colors.red,
+                'むずかしい',
+                isReading ? '◯じ◯ふんをよむ\n（1ふんごと）' : '◯じ◯ふんをあわせる\n（1ふんごと）',
+                isReading,
+              ),
+              const SizedBox(height: 40),
+            ],
+          ),
         ),
       ),
     );
@@ -63,13 +78,16 @@ class LevelSelectScreen extends StatelessWidget {
     Color color,
     String levelName,
     String description,
+    bool isReading,
   ) {
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => GameScreen(level: level),
+            builder: (_) => isReading
+                ? ClockReadingScreen(level: level)
+                : GameScreen(level: level),
           ),
         );
       },
