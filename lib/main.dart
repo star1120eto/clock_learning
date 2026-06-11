@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:clock_learning/screens/home_screen.dart';
-import 'package:clock_learning/utils/performance_monitor.dart';
 import 'package:flutter/foundation.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:clock_learning/screens/home_screen.dart';
+import 'package:clock_learning/screens/onboarding_screen.dart';
+import 'package:clock_learning/services/subscription_service.dart';
+import 'package:clock_learning/utils/performance_monitor.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   // 縦向き（Portrait）固定
-  SystemChrome.setPreferredOrientations([
+  await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
@@ -18,35 +23,49 @@ void main() {
     monitor.startMonitoring();
   }
 
-  runApp(const MyApp());
+  // オンボーディング完了フラグを確認
+  final prefs = await SharedPreferences.getInstance();
+  final onboardingComplete =
+      prefs.getBool(kOnboardingCompleteKey) ?? false;
+
+  runApp(MyApp(showOnboarding: !onboardingComplete));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final bool showOnboarding;
+
+  const MyApp({super.key, required this.showOnboarding});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: '時計学習アプリ',
-      theme: ThemeData(
-        // 未就学児向けのカラフルなデザイン
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.blue,
-          brightness: Brightness.light,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => SubscriptionService()),
+      ],
+      child: MaterialApp(
+        title: 'とけいがくしゅう',
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: const Color(0xFF1565C0),
+            brightness: Brightness.light,
+          ),
+          useMaterial3: true,
+          textTheme: const TextTheme(
+            headlineLarge: TextStyle(
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+            ),
+            headlineMedium: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+            ),
+            bodyLarge: TextStyle(fontSize: 20),
+            bodyMedium: TextStyle(fontSize: 18),
+          ),
         ),
-        useMaterial3: true,
-        // 大きなフォントサイズで読みやすく（sp単位で端末のフォントサイズ設定に従う）
-        textTheme: TextTheme(
-          headlineLarge: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-          headlineMedium: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-          bodyLarge: const TextStyle(fontSize: 20),
-          bodyMedium: const TextStyle(fontSize: 18),
-        ),
-        // アニメーションの減速モーション対応
-        // MediaQuery.of(context).disableAnimations で無効化可能
+        home: showOnboarding ? const OnboardingScreen() : const HomeScreen(),
+        debugShowCheckedModeBanner: false,
       ),
-      home: const HomeScreen(),
-      debugShowCheckedModeBanner: false,
     );
   }
 }
