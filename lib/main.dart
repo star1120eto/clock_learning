@@ -6,6 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:clock_learning/screens/home_screen.dart';
 import 'package:clock_learning/screens/onboarding_screen.dart';
 import 'package:clock_learning/services/subscription_service.dart';
+import 'package:clock_learning/services/sticker_service.dart';
+import 'package:clock_learning/services/daily_challenge_service.dart';
 import 'package:clock_learning/utils/performance_monitor.dart';
 
 void main() async {
@@ -41,6 +43,8 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => SubscriptionService()),
+        ChangeNotifierProvider(create: (_) => StickerService()),
+        ChangeNotifierProvider(create: (_) => DailyChallengeService()),
       ],
       child: MaterialApp(
         title: 'とけいがくしゅう',

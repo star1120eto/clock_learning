@@ -149,10 +149,12 @@ class GameState extends ChangeNotifier {
 /// ゲーム画面
 class GameScreen extends StatefulWidget {
   final Level level;
+  final bool isDailyChallenge;
 
   const GameScreen({
     super.key,
     required this.level,
+    this.isDailyChallenge = false,
   });
 
   @override
@@ -221,6 +223,7 @@ class _GameScreenState extends State<GameScreen> {
                         correctCount: gameState.correctCount,
                         incorrectCount: gameState.incorrectCount,
                         level: widget.level,
+                        isDailyChallenge: widget.isDailyChallenge,
                       ),
                     ),
                   );
