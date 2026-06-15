@@ -30,6 +30,8 @@ class _ClockReadingScreenState extends State<ClockReadingScreen> {
 
   int _targetHour = 0;
   int _targetMinute = 0;
+  int _prevTargetHour = -1;
+  int _prevTargetMinute = -1;
   int _questionCount = 0;
   int _correctCount = 0;
 
@@ -59,12 +61,26 @@ class _ClockReadingScreenState extends State<ClockReadingScreen> {
 
   void _nextQuestion() {
     final r = Random();
-    _targetHour = r.nextInt(12) + 1;
-    _targetMinute = switch (widget.level) {
-      Level.easy => 0,
-      Level.normal => (r.nextInt(12)) * 5,
-      Level.hard => r.nextInt(60),
-    };
+    int newHour;
+    int newMinute;
+    int attempts = 0;
+    do {
+      newHour = r.nextInt(12) + 1;
+      newMinute = switch (widget.level) {
+        Level.easy => 0,
+        Level.normal => (r.nextInt(12)) * 5,
+        Level.hard => r.nextInt(60),
+      };
+      attempts++;
+    } while (
+      newHour == _prevTargetHour &&
+      newMinute == _prevTargetMinute &&
+      attempts < 20
+    );
+    _prevTargetHour = _targetHour;
+    _prevTargetMinute = _targetMinute;
+    _targetHour = newHour;
+    _targetMinute = newMinute;
     _clockController.initialize(_targetHour, _targetMinute, widget.level);
     setState(() {
       _hourInput = '';

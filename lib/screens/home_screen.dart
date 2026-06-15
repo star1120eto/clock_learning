@@ -135,7 +135,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           icon: Icons.search,
                           label: 'とけいをよむ',
                           sublabel: 'とけいをみてじかんをこたえる',
-                          color: const Color(0xFF00897B),
+                          color: const Color(0xFF1565C0),
                           onTap: () => Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -150,7 +150,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           icon: Icons.touch_app,
                           label: 'とけいをあわせる',
                           sublabel: 'はりをうごかしてじかんをあわせる',
-                          color: const Color(0xFF1E88E5),
+                          color: const Color(0xFF0277BD),
                           onTap: () => Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -165,7 +165,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           icon: Icons.play_circle_outline,
                           label: 'じゆうにさわる',
                           sublabel: 'じゆうにとけいをうごかしてみよう',
-                          color: const Color(0xFF7B1FA2),
+                          color: const Color(0xFF00695C),
                           onTap: () => Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -178,7 +178,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           icon: Icons.bar_chart,
                           label: 'すすみぐあいをみる',
                           sublabel: 'がくしゅうのきろくをかくにん',
-                          color: const Color(0xFF2E7D32),
+                          color: const Color(0xFF283593),
                           onTap: () => Navigator.push(
                             context,
                             MaterialPageRoute(
