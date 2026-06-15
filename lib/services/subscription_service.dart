@@ -87,9 +87,9 @@ class SubscriptionService extends ChangeNotifier {
           if (_productIds.contains(purchase.productID)) {
             await _setPremium(true);
           }
-          if (purchase.pendingCompletionData != null) {
-            await InAppPurchase.instance.completePurchase(purchase);
-          }
+          // in_app_purchase 3.x では pendingCompletionData が廃止されたため
+          // purchased / restored 時は常に completePurchase を呼ぶ
+          await InAppPurchase.instance.completePurchase(purchase);
           _purchaseError = null;
           break;
         case PurchaseStatus.error:
