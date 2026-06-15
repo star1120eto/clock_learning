@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:clock_learning/models/level.dart';
+import 'package:clock_learning/screens/result_screen.dart';
 import 'package:clock_learning/widgets/clock_widget.dart';
 import 'package:clock_learning/widgets/clock_controller.dart';
 import 'package:clock_learning/services/audio_service.dart';
@@ -168,38 +169,16 @@ class _ClockReadingScreenState extends State<ClockReadingScreen> {
   }
 
   void _showResult() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => AlertDialog(
-        title: const Text('けっか'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('せいかい: $_correctCount もん', style: const TextStyle(fontSize: 22, color: Colors.green)),
-            Text('まちがい: ${_questionCount - _correctCount} もん', style: const TextStyle(fontSize: 22, color: Colors.red)),
-          ],
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ResultScreen(
+          correctCount: _correctCount,
+          incorrectCount: _questionCount - _correctCount,
+          level: widget.level,
+          // リトライ時もよみとりモードに戻る
+          retryBuilder: (_) => ClockReadingScreen(level: widget.level),
         ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context);
-            },
-            child: const Text('もどる'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              setState(() {
-                _questionCount = 0;
-                _correctCount = 0;
-              });
-              _nextQuestion();
-            },
-            child: const Text('もういちど'),
-          ),
-        ],
       ),
     );
   }
