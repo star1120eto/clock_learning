@@ -205,6 +205,12 @@ class _ClockReadingScreenState extends State<ClockReadingScreen> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
+    final screenHeight = MediaQuery.of(context).size.height;
+    final isCompact = screenHeight < 750;
+    final clockSize = isCompact ? 190.0 : 250.0;
+    final numpadAspect = isCompact ? 2.6 : 2.0;
+    final vSpaceLg = isCompact ? 10.0 : 20.0;
+    final vSpaceSm = isCompact ? 8.0 : 16.0;
     final showMinute = widget.level != Level.easy;
 
     return Scaffold(
@@ -215,7 +221,7 @@ class _ClockReadingScreenState extends State<ClockReadingScreen> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: isCompact ? 4 : 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -224,19 +230,23 @@ class _ClockReadingScreenState extends State<ClockReadingScreen> {
               ],
             ),
           ),
-          const Text('なんじなんぷん？', style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 16),
+          Text('なんじなんぷん？',
+              style: TextStyle(
+                fontSize: isCompact ? 22 : 26,
+                fontWeight: FontWeight.bold,
+              )),
+          SizedBox(height: vSpaceSm),
           Center(
             child: ClockWidget(
               controller: _clockController,
               level: widget.level,
-              size: 250,
+              size: clockSize,
               displayCorrectTime: true,
               correctHour: _targetHour,
               correctMinute: _targetMinute,
             ),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: vSpaceLg),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -265,24 +275,24 @@ class _ClockReadingScreenState extends State<ClockReadingScreen> {
           ),
           if (_lastResult != null)
             Padding(
-              padding: const EdgeInsets.all(8),
+              padding: EdgeInsets.symmetric(vertical: isCompact ? 4 : 8, horizontal: 8),
               child: Text(
                 _lastResult! ? 'せいかい！' : 'まちがい… こたえは $_targetHour じ${showMinute ? " $_targetMinute ふん" : ""}',
                 style: TextStyle(
-                  fontSize: 22,
+                  fontSize: isCompact ? 18 : 22,
                   fontWeight: FontWeight.bold,
                   color: _lastResult! ? Colors.green : Colors.red,
                 ),
               ),
             ),
           const Spacer(),
-          _buildNumpad(),
-          const SizedBox(height: 16),
+          _buildNumpad(numpadAspect),
+          SizedBox(height: vSpaceSm),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 8),
+            padding: EdgeInsets.symmetric(horizontal: 32, vertical: isCompact ? 4 : 8),
             child: SizedBox(
               width: double.infinity,
-              height: 64,
+              height: isCompact ? 52 : 64,
               child: _isChecked && _lastResult == false
                   ? ElevatedButton(
                       onPressed: _goNext,
@@ -346,7 +356,7 @@ class _ClockReadingScreenState extends State<ClockReadingScreen> {
     );
   }
 
-  Widget _buildNumpad() {
+  Widget _buildNumpad(double aspectRatio) {
     final keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '⌫', '0', '✓'];
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -354,9 +364,9 @@ class _ClockReadingScreenState extends State<ClockReadingScreen> {
         crossAxisCount: 3,
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        childAspectRatio: 2,
-        mainAxisSpacing: 8,
-        crossAxisSpacing: 8,
+        childAspectRatio: aspectRatio,
+        mainAxisSpacing: 6,
+        crossAxisSpacing: 6,
         children: keys.map((k) {
           if (k == '✓') {
             return ElevatedButton(

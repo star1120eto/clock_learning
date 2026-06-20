@@ -252,9 +252,15 @@ class _GameScreenState extends State<GameScreen> {
                 }
               });
             }
+            final screenHeight = MediaQuery.of(context).size.height;
+            final isCompact = screenHeight < 750;
+            final clockSize = isCompact ? 230.0 : 300.0;
+            final vSpaceLg = isCompact ? 16.0 : 40.0;
+            final buttonHeight = isCompact ? 64.0 : 80.0;
+
             return Column(
               children: [
-                const SizedBox(height: 20),
+                SizedBox(height: isCompact ? 8 : 20),
                 // 問題番号
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -272,11 +278,11 @@ class _GameScreenState extends State<GameScreen> {
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
+                    Text(
                       'とけいをあわせてね！',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 28,
+                        fontSize: isCompact ? 22 : 28,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -284,20 +290,20 @@ class _GameScreenState extends State<GameScreen> {
                     Text(
                       gameState.currentProblem!.targetTime.hiraganaString,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 32,
+                      style: TextStyle(
+                        fontSize: isCompact ? 26 : 32,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 40),
+                SizedBox(height: vSpaceLg),
                 // 時計ウィジェット（不正解時は正解時刻を表示し文字盤を緑にする）
                 Center(
                   child: ClockWidget(
                     controller: gameState.clockController,
                     level: widget.level,
-                    size: 300,
+                    size: clockSize,
                     displayCorrectTime: gameState.lastResult == false,
                     correctHour: gameState.lastResult == false
                         ? gameState.currentProblem!.targetTime.hour
@@ -312,15 +318,15 @@ class _GameScreenState extends State<GameScreen> {
                 // 正解/不正解の表示
                 if (gameState.lastResult != null)
                   Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: _buildResultMessage(gameState.lastResult!),
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: isCompact ? 8 : 16),
+                    child: _buildResultMessage(gameState.lastResult!, isCompact: isCompact),
                   ),
                 // 回答確定ボタン または 不正解時の「つぎのもんだい」ボタン（最小80x80dp）
                 Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: EdgeInsets.all(isCompact ? 12 : 16),
                   child: SizedBox(
                     width: 240,
-                    height: 80,
+                    height: buttonHeight,
                     child: gameState.lastResult == false
                         ? ElevatedButton(
                             onPressed: () => gameState.goToNextProblem(),
@@ -374,10 +380,11 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
-  Widget _buildResultMessage(bool isCorrect) {
+  Widget _buildResultMessage(bool isCorrect, {bool isCompact = false}) {
+    final pad = isCompact ? 10.0 : 16.0;
     if (isCorrect) {
       return Container(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(pad),
         decoration: BoxDecoration(
           color: Colors.green.withValues(alpha: 0.2),
           borderRadius: BorderRadius.circular(10),
@@ -385,17 +392,12 @@ class _GameScreenState extends State<GameScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // 色覚多様性対応：色＋アイコン（○）の併用
-            const Icon(
-              Icons.check_circle,
-              color: Colors.green,
-              size: 40,
-            ),
+            Icon(Icons.check_circle, color: Colors.green, size: isCompact ? 32 : 40),
             const SizedBox(width: 8),
-            const Text(
+            Text(
               'せいかい！',
               style: TextStyle(
-                fontSize: 32,
+                fontSize: isCompact ? 26 : 32,
                 fontWeight: FontWeight.bold,
                 color: Colors.green,
               ),
@@ -405,12 +407,10 @@ class _GameScreenState extends State<GameScreen> {
       );
     } else {
       final problem = _gameState?.currentProblem;
-      if (problem == null) {
-        return const SizedBox.shrink();
-      }
+      if (problem == null) return const SizedBox.shrink();
       final targetTime = problem.targetTime;
       return Container(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(pad),
         decoration: BoxDecoration(
           color: Colors.red.withValues(alpha: 0.2),
           borderRadius: BorderRadius.circular(10),
@@ -420,30 +420,22 @@ class _GameScreenState extends State<GameScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // 色覚多様性対応：色＋アイコン（×）の併用
-                const Icon(
-                  Icons.cancel,
-                  color: Colors.red,
-                  size: 40,
-                ),
+                Icon(Icons.cancel, color: Colors.red, size: isCompact ? 32 : 40),
                 const SizedBox(width: 8),
-                const Text(
+                Text(
                   'ちがいます',
                   style: TextStyle(
-                    fontSize: 24,
+                    fontSize: isCompact ? 20 : 24,
                     fontWeight: FontWeight.bold,
                     color: Colors.red,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: isCompact ? 4 : 8),
             Text(
               'せいかいは${targetTime.displayString}です',
-              style: const TextStyle(
-                fontSize: 20,
-                color: Colors.red,
-              ),
+              style: TextStyle(fontSize: isCompact ? 16 : 20, color: Colors.red),
             ),
           ],
         ),
