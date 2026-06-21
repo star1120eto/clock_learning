@@ -209,18 +209,14 @@ class _MascotSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Stack(
-        clipBehavior: Clip.none,
-        alignment: Alignment.center,
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           const ClockMascotWidget(size: 110),
-          // 吹き出し（右上）
-          Positioned(
-            right: 20,
-            top: 0,
-            child: _SpeechBubble(text: message),
-          ),
+          const SizedBox(width: 12),
+          Flexible(child: _SpeechBubble(text: message)),
         ],
       ),
     );
