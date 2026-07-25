@@ -5,6 +5,7 @@ import 'package:clock_learning/screens/game_screen.dart';
 import 'package:clock_learning/screens/clock_reading_screen.dart';
 import 'package:clock_learning/screens/paywall_screen.dart';
 import 'package:clock_learning/services/subscription_service.dart';
+import 'package:clock_learning/widgets/parental_gate.dart';
 
 enum LevelSelectMode { game, reading }
 
@@ -102,10 +103,14 @@ class LevelSelectScreen extends StatelessWidget {
     );
   }
 
+  /// 課金画面は保護者確認（ペアレンタルゲート）を通過した場合のみ開く
   void _showPaywall(BuildContext context) {
-    Navigator.push(
+    ParentalGate.guard(
       context,
-      MaterialPageRoute(builder: (_) => const PaywallScreen()),
+      () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const PaywallScreen()),
+      ),
     );
   }
 }
@@ -219,9 +224,12 @@ class _PremiumBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.push(
+      onTap: () => ParentalGate.guard(
         context,
-        MaterialPageRoute(builder: (_) => const PaywallScreen()),
+        () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const PaywallScreen()),
+        ),
       ),
       child: Container(
         width: double.infinity,

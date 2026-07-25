@@ -2,12 +2,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:clock_learning/constants/legal_urls.dart';
 import 'package:clock_learning/services/subscription_service.dart';
 import 'package:clock_learning/services/audio_service.dart';
 import 'package:clock_learning/screens/paywall_screen.dart';
-
-const String _kPrivacyPolicyUrl = 'https://example.com/privacy';
-const String _kTermsOfServiceUrl = 'https://example.com/terms';
+import 'package:clock_learning/widgets/parental_gate.dart';
 
 /// 設定画面
 class SettingsScreen extends StatefulWidget {
@@ -105,9 +104,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
               ),
-              onTap: () => Navigator.push(
+              onTap: () => ParentalGate.guard(
                 context,
-                MaterialPageRoute(builder: (_) => const PaywallScreen()),
+                () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const PaywallScreen()),
+                ),
               ),
             ),
           ],
@@ -124,13 +126,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
             leading: const Icon(Icons.privacy_tip_outlined),
             title: const Text('プライバシーポリシー', style: TextStyle(fontSize: 16)),
             trailing: const Icon(Icons.open_in_new, size: 16),
-            onTap: () => _launchUrl(_kPrivacyPolicyUrl),
+            onTap: () => _openExternalLink(context, kPrivacyPolicyUrl),
           ),
           ListTile(
             leading: const Icon(Icons.article_outlined),
             title: const Text('りようきやく', style: TextStyle(fontSize: 16)),
             trailing: const Icon(Icons.open_in_new, size: 16),
-            onTap: () => _launchUrl(_kTermsOfServiceUrl),
+            onTap: () => _openExternalLink(context, kTermsOfServiceUrl),
+          ),
+          ListTile(
+            leading: const Icon(Icons.help_outline),
+            title: const Text('サポート', style: TextStyle(fontSize: 16)),
+            trailing: const Icon(Icons.open_in_new, size: 16),
+            onTap: () => _openExternalLink(context, kSupportUrl),
           ),
           const Divider(height: 1),
 
@@ -177,7 +185,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Future<void> _launchUrl(String url) async {
+  /// 外部サイトを開く（Apple のキッズ向け要件に合わせ、保護者確認を挟む）
+  Future<void> _openExternalLink(BuildContext context, String url) async {
+    final passed = await ParentalGate.show(context);
+    if (!passed) return;
     final uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);

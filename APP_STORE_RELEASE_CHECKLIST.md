@@ -1,12 +1,16 @@
 # App Store 公開 残作業チェックリスト
 
 Apple Developer Program 登録完了時点（2026-07）での、iOS 版 App Store 公開までの残作業一覧。
-調査対象コミット: `1f5d02e`（main）
 
-優先度の凡例:
-- 🔴 **ブロッカー** … これが未対応だと提出できない / ほぼ確実にリジェクトされる
+- 調査対象コミット: `1f5d02e`（main）
+- 方針決定済み: **教育カテゴリ（4+）＋ペアレンタルゲート実装**で公開する
+- Bundle ID: ドメイン取得方針の検討中のため**未確定・未変更**
+
+凡例:
+- 🔴 **ブロッカー** … 未対応だと提出できない / ほぼ確実にリジェクトされる
 - 🟡 **要対応** … 提出自体は可能だが、審査でのリジェクトリスクが高い
 - 🟢 **推奨** … 品質・体験の改善。初回リリース後でも可
+- ✅ **対応済み** … このリポジトリで対応完了
 
 ---
 
@@ -21,158 +25,181 @@ Apple Developer Program 登録完了時点（2026-07）での、iOS 版 App Stor
 | `android/app/build.gradle.kts` `namespace` / `applicationId` | `com.example.clock_learning` |
 
 `com.example.*` は App Store Connect に登録できない。所有ドメインを逆順にした一意な ID
-（例: `jp.<yourdomain>.clocklearning`）に変更し、**App Store Connect で同じ ID の App を作成**する。
+に変更し、**App Store Connect で同じ ID の App を作成**する。
+
+ドメインを取得しない場合は、GitHub Pages のドメインに基づく
+`io.github.<ユーザー名>.clocklearning` が実務上の定番。
 
 > ⚠️ Bundle ID は登録後に変更できない。App Store Connect で App レコードを作る前に確定させること。
 > Android の `applicationId` も同時に決めておく（Play 公開時に同じく変更不可）。
 
+変更時にあわせて更新する箇所:
+- `lib/constants/legal_urls.dart` の `kSiteBaseUrl`（独自ドメインで法務ページを公開する場合）
+
 ### A-2. 🔴 署名設定（Team / Provisioning Profile）が未設定
 
-`project.pbxproj` に `DEVELOPMENT_TEAM` がなく、`CODE_SIGN_IDENTITY[sdk=iphoneos*] = "iPhone Developer"`（旧表記）のまま。
+`project.pbxproj` に `DEVELOPMENT_TEAM` がなく、
+`CODE_SIGN_IDENTITY[sdk=iphoneos*] = "iPhone Developer"`（旧表記）のまま。
+Xcode がない環境では設定できないため、macOS 上で以下を行う:
 
 - Xcode → Runner target → Signing & Capabilities で Team を選択し、Automatically manage signing を有効化
-- Capability に **In-App Purchase** を追加（`Runner.entitlements` が未生成のため、追加時に新規作成される）
-- `ios/Runner/*.entitlements` がリポジトリに存在しないので、生成されたらコミットする
+- Capability に **In-App Purchase** を追加（`Runner.entitlements` が新規生成される）
+- 生成された `ios/Runner/*.entitlements` をコミットする
 
-### A-3. 🔴 プライバシーポリシー / 利用規約 URL が `https://example.com/*` のまま
+### A-3. ✅ プライバシーポリシー / 利用規約 URL
 
-```
-lib/screens/paywall_screen.dart:9-10
-lib/screens/settings_screen.dart:9-10
-```
+`https://example.com/*` のプレースホルダを廃止し、`lib/constants/legal_urls.dart` に集約した。
 
-サブスク課金アプリでは App 内・App Store Connect の双方に実在する URL が必須。
-定数が 2 ファイルに重複しているので、`lib/constants/legal_urls.dart` 等に集約するのが望ましい。
+| 定数 | URL |
+|------|-----|
+| `kPrivacyPolicyUrl` | `https://star1120eto.github.io/clock_learning/privacy.html` |
+| `kTermsOfServiceUrl` | `https://star1120eto.github.io/clock_learning/terms.html` |
+| `kSupportUrl` | `https://star1120eto.github.io/clock_learning/support.html` |
 
-### A-4. 🔴 プライバシーマニフェスト `PrivacyInfo.xcprivacy` が無い
+独自ドメインへ移行する場合は `kSiteBaseUrl` の 1 行のみ差し替えればよい。
+`settings_screen.dart` にはサポートページへの導線も追加した。
 
-`ios/` 配下に `.xcprivacy` が 1 つも存在しない。2024 年 5 月以降、
-`UserDefaults` API（`shared_preferences` が使用）を含むアプリは
-**Required Reason API の宣言が必須**で、無いと App Store Connect のアップロード時に警告〜拒否される。
+### A-4. ✅ プライバシーマニフェスト `PrivacyInfo.xcprivacy`
 
-作成が必要な内容（本アプリの実態に基づく）:
+`ios/Runner/PrivacyInfo.xcprivacy` を作成し、`project.pbxproj` の
+Runner グループと Copy Bundle Resources に登録済み。
 
 | 項目 | 宣言内容 |
 |------|---------|
-| `NSPrivacyTracking` | `false`（トラッキングなし） |
+| `NSPrivacyTracking` | `false` |
 | `NSPrivacyTrackingDomains` | 空配列 |
-| `NSPrivacyCollectedDataTypes` | 空配列（サーバー送信なし・端末内保存のみ） |
+| `NSPrivacyCollectedDataTypes` | 空配列（外部送信なし） |
 | `NSPrivacyAccessedAPITypes` | `NSPrivacyAccessedAPICategoryUserDefaults` / reason `CA92.1` |
 
-配置先: `ios/Runner/PrivacyInfo.xcprivacy` を作成し、Xcode で Runner target の
-Copy Bundle Resources に追加する。
+`CA92.1` は「自アプリからのみアクセスされる情報の読み書き」で、
+`shared_preferences` の用途（学習進捗・設定・購入状態の保存）に合致する。
 
-### A-5. 🟡 Info.plist の不足項目
+> 📌 Xcode で開いた際、Runner target の Build Phases → Copy Bundle Resources に
+> `PrivacyInfo.xcprivacy` が入っていることを一度目視確認すること（pbxproj を手書きで編集したため）。
 
-`ios/Runner/Info.plist` に以下が無い:
+### A-5. ✅ Info.plist の整備
 
-| キー | 必要な理由 |
-|------|-----------|
-| `ITSAppUsesNonExemptEncryption` = `false` | 無い場合、ビルドごとに輸出コンプライアンス質問への回答を手動で求められる |
-| `CFBundleLocalizations` = `["ja"]` / `CFBundleDevelopmentRegion` | UI が全て日本語。開発言語が en のままだと審査時の想定言語と食い違う |
-
-また整合性の問題:
-
-- `CFBundleDisplayName` が英語の `Clock Learning`、`CFBundleName` が `clock_learning` だが、
-  アプリ内タイトルは `とけいがくしゅう`（`lib/main.dart:50`）。ホーム画面の表示名を日本語にするか統一する
-- `UISupportedInterfaceOrientations` に landscape が含まれるが、
-  `lib/main.dart:17-20` で portrait 固定している。Info.plist 側も portrait のみに揃える
-  （揃えない場合、iPad で横向き表示の検証を求められる可能性あり）
+- `ITSAppUsesNonExemptEncryption` = `false` を追加（提出ごとの輸出コンプライアンス質問を省略）
+- `CFBundleDevelopmentRegion` を `ja` に変更し、`CFBundleLocalizations` = `["ja"]` を追加
+- `CFBundleDisplayName` を `Clock Learning` → `とけいがくしゅう` に変更（アプリ内タイトルと統一）
+- `UISupportedInterfaceOrientations`（iPhone / iPad とも）を縦向きのみに変更し、
+  `lib/main.dart` の `setPreferredOrientations` と整合させた
 
 ### A-6. 🟡 iPad 対応の扱いを決める
 
-`TARGETED_DEVICE_FAMILY = "1,2"`（iPhone + iPad）のまま。iPad 対応を維持するなら
-**13インチ iPad のスクリーンショットが必須**、かつ iPad 実機/シミュレータでの
-レイアウト崩れ確認が必要。初回リリースを軽くするなら `1`（iPhone のみ）に変更する。
+`TARGETED_DEVICE_FAMILY = "1,2"`（iPhone + iPad）のまま**変更していない**。
+維持する場合は **13インチ iPad のスクリーンショットが必須**で、
+iPad 実機/シミュレータでのレイアウト確認も必要。
+初回リリースを軽くするなら `1`（iPhone のみ）に変更する。
 
-### A-7. 🟡 キッズカテゴリを選ぶ場合はペアレンタルゲートが必須
+### A-7. ✅ ペアレンタルゲート（保護者確認）
 
-`lib/` 内に保護者確認（ペアレンタルゲート）の実装が無い。
-未就学〜低学年向けの本アプリを **キッズカテゴリ**で出す場合、Apple は以下を要求する:
+`lib/widgets/parental_gate.dart` を追加。教育カテゴリでは必須要件ではないが、
+子ども向けアプリとして課金導線を保護するために実装した。
 
-- 購入フロー（`PaywallScreen`）へ進む前に、子どもが突破できない年齢確認ゲート
-- 外部リンク（プライバシーポリシー・利用規約の `launchUrl`）を開く前にも同じゲート
-- サードパーティ解析・広告 SDK の不使用（現状 未使用なのでOK）
+仕様:
+- 「NN × N = ?」（11〜29 × 3〜9）を**選択式ではなく数値入力**で回答させる
+- 説明文・ボタンをすべて漢字表記にし、対象年齢（4〜8歳）が読めないようにする
+- 誤答は 3 回まで。超えると閉じる。ダイアログ外タップでは閉じない
 
-キッズカテゴリを選ばない（「教育」カテゴリ + 年齢制限 4+）場合は必須ではないが、
-子ども向けを謳う以上、課金導線へのゲートは実装しておくのが安全。
+適用箇所:
 
-**カテゴリ選択は先に決めること**（審査基準そのものが変わるため）。
+| 画面 | 操作 |
+|------|------|
+| `level_select_screen.dart` | ロック中レベルのタップ → ペイウォール |
+| `level_select_screen.dart` | プレミアム案内バナーのタップ → ペイウォール |
+| `settings_screen.dart` | 「プレミアムにアップグレード」→ ペイウォール |
+| `settings_screen.dart` | プライバシーポリシー / 利用規約 / サポートの外部リンク |
 
-### A-8. 🟡 サブスクリプション表示情報の不足
+ホーム画面右上の星アイコン（`home_screen.dart`）は**プレミアム加入者にのみ表示**され、
+遷移先も加入済み画面で購入操作がないため、ゲートは適用していない。
 
-`lib/screens/paywall_screen.dart` は Restore ボタン・法的リンク・自動更新の説明文まで実装済みで良好。
-ただし App Store Review Guideline 3.1.2 が要求する以下が不足:
+ペイウォール内の法的リンクは、画面到達時点でゲートを通過済みのため再確認しない。
 
-- **サブスクリプションの期間**（月額/年額）が明示されていない。`ProductDetails.title` に依存しており、
-  App Store Connect の登録名次第では期間が表示されない（`_PriceCard`、`paywall_screen.dart:429-447`）
-- **単位あたりの価格**（年額プランの「1か月あたり◯円」等）は必須ではないが「おとく！」バッジを
-  出すなら根拠として併記が望ましい
-- 無料体験について「無料体験期間終了後、自動的に更新されます」と固定文言で書いているが
-  （`paywall_screen.dart:118-121`）、**App Store Connect で無料体験（Introductory Offer）を
-  設定しない場合は虚偽表示になる**。体験を設定するか、文言を修正するかを揃える
+テスト: `test/widgets/parental_gate_test.dart`（正解・キャンセル・誤答・回数超過・
+バリアタップの 5 ケース）
 
-### A-9. 🟡 レシート検証がローカルのみ
+### A-8. ✅ サブスクリプション表示情報（Guideline 3.1.2）
 
-`lib/services/subscription_service.dart` は購入完了イベントを受けて
+`lib/screens/paywall_screen.dart` を修正:
+
+- **期間を App Store Connect の登録名に依存させない**。`ProductDetails.title` の表示をやめ、
+  アプリ側が持つ「年額プラン / 月額プラン」＋「1年ごとに自動更新 / 1か月ごとに自動更新」を表示する
+- 年額プランに「1か月あたり ◯◯ 相当」を併記（`rawPrice / 12`）。「おとく！」バッジの根拠になる
+- **無料体験の記述を削除**。旧文言は「無料体験期間終了後、自動的に更新されます」と
+  無条件に書いていたため、Introductory Offer を設定しない場合は虚偽表示になっていた。
+  自動更新・請求タイミング・解約手順（iOS / Android 別）を記載する文言に差し替えた
+
+> 📌 App Store Connect で無料体験を設定する場合は、この文言に体験期間の説明を戻すこと。
+
+### A-9. 🟡 一部対応 — レシート検証がローカルのみ
+
+`lib/services/subscription_service.dart` は購入イベントを受けて
 `SharedPreferences` に `is_premium` を保存するだけで、レシート検証を行っていない。
 
-- 審査は通る（Apple は必須要件としていない）が、端末側改ざんで有料機能が解放される
-- サブスクの**期限切れ・解約後も `is_premium` が `true` のまま**になる構造的な問題がある
-  （`restorePurchases()` は復元イベントで true にするだけで、false に戻す経路が無い）
+対応した点:
+- ユーザー操作による `restorePurchases()` で対象商品が 1 件も復元されなかった場合、
+  `is_premium` を `false` に戻すようにした（従来は `true` に上げる経路しかなかった）
+- 通信エラー時は権利を取り消さない（有料ユーザーの誤締め出しを防ぐ）
 
-初回リリースを優先するなら許容範囲だが、少なくとも「解約後に権利が戻らない」点は
-既知の問題として認識しておくこと。将来的には StoreKit 2 / サーバー側検証への移行を推奨。
+残る制約:
+- StoreKit 1 の復元は失効済みトランザクションも返し得るため、**解約・期限切れを確実には検知できない**
+- 起動時の自動復元では権利を取り消さない（オフライン起動での誤判定を避けるため）
+- 端末側の改ざんで有料機能を解放される余地がある
 
-### A-10. 🟢 音声アセットが空
+正確な有効期限判定にはサーバー側レシート検証 / StoreKit 2 への移行が必要。
+審査は現状でも通るため、初回リリース後の課題とする。
 
-`assets/audio/` は `.gitkeep` のみで、`audio_service.dart` が参照する `audio/correct.ogg` 等が存在しない。
-`try/catch` で握り潰しているためクラッシュはしないが、
-**設定画面に「おとをならす」トグルがあるのに音が一切鳴らない**状態。
-機能が動作しないことをリジェクト理由にされ得る（Guideline 2.1）ので、
-音源を追加するか、トグルを一旦隠すかのどちらかを行う。
-`assets/animations/` も同様に空（Lottie 未使用なら `pubspec.yaml` の依存削除も検討）。
+### A-10. 🟢 音声アセットが空（未対応）
 
-### A-11. 🟢 起動画面が Flutter デフォルト
+`assets/audio/` は `.gitkeep` のみで、`audio_service.dart` が参照する
+`audio/correct.ogg` 等が存在しない。`try/catch` で握り潰しているためクラッシュはしないが、
+**設定画面に「おとをならす」トグルがあるのに音が一切鳴らない**。
+機能が動作しないことをリジェクト理由にされ得る（Guideline 2.1）。
 
-`ios/Runner/Assets.xcassets/LaunchImage.imageset/` はテンプレートのままで、
-`README.md` も残っている。ブランド感のある起動画面に差し替えると審査官の印象が良い。
+音源そのものは自動生成できないため未対応。以下のいずれかを選ぶ:
+1. 効果音（正解 / 不正解 / バッジ獲得）を用意して `assets/audio/` に配置する
+2. 音源が用意できるまで、設定画面の音声トグルを非表示にする
 
-### A-12. 🟢 Web 版メタデータがテンプレートのまま
+`assets/animations/` も空。Lottie を使わないなら `pubspec.yaml` から
+`lottie` 依存を削除するとバイナリサイズが減る。
 
-`web/index.html` の `description` が `A new Flutter project.`、
-`web/manifest.json` の `name` が `clock_learning`。
-App Store 提出には直接関係しないが、公開中の GitHub Pages 版の見え方に影響する。
+### A-11. 🟢 起動画面が Flutter デフォルト（未対応）
+
+`ios/Runner/Assets.xcassets/LaunchImage.imageset/` はテンプレートのまま。
+画像素材が必要なため未対応。
+
+### A-12. ✅ Web 版メタデータ
+
+- `web/index.html`: `lang="ja"`、タイトル、description、`apple-mobile-web-app-title` を実際の内容に変更
+- `web/manifest.json`: `name` / `short_name` / `description` を日本語化し、
+  テーマカラーをアプリのシード色 `#1565C0` に統一
 
 ### A-13. 🟢 バージョン番号
 
-`pubspec.yaml`: `version: 1.1.0+2`。初回提出時に build number が重複しないよう管理する
-（再提出のたびに `+N` をインクリメント）。
+`pubspec.yaml`: `version: 1.1.0+2`。初回提出時に build number が重複しないよう、
+再提出のたびに `+N` をインクリメントする。
 
 ---
 
-## B. 外部で用意が必要なもの（リポジトリ外）
+## B. 外部で用意が必要なもの
 
-### B-1. 🔴 プライバシーポリシーの作成・公開
+### B-1〜B-3. ✅ 法務・サポートページを作成
 
-必須。子ども向けアプリなので以下に言及すること:
+`web/` 配下に作成した。`flutter build web` の出力に含まれ、
+`.github/workflows/deploy-web.yml` により main への push で GitHub Pages に自動デプロイされる。
 
-- 収集する個人情報は無い（学習進捗は端末内 `SharedPreferences` のみに保存、外部送信なし）
-- 課金は Apple / Google 経由で、開発者は決済情報を取得しない
-- 第三者への提供・解析ツールの使用が無いこと
-- 問い合わせ先メールアドレス
-- COPPA / 日本の個人情報保護法への対応方針
+| ファイル | 公開 URL | 内容 |
+|---------|---------|------|
+| `web/privacy.html` | `/privacy.html` | 個人情報を収集しないこと、端末内保存の内容、解析・広告の不使用、課金の扱い、COPPA / 個人情報保護法への言及 |
+| `web/terms.html` | `/terms.html` | 全12条。サブスクの自動更新条件、解約手順、返金、禁止事項、免責、準拠法 |
+| `web/support.html` | `/support.html` | FAQ 8項目（対象年齢、無料範囲、解約、復元、データ引き継ぎ、音、課金防止、広告） |
 
-公開先は GitHub Pages（`docs/` を既に gh-pages 運用しているので同じドメインに置ける）で十分。
+> 🔴 **公開前に必須**: 3ファイルとも問い合わせ先が `support@example.com` のプレースホルダ。
+> 実際の連絡先メールアドレスに差し替えること（各ファイルに `TODO` コメントを入れてある）。
+> App Store Connect の「サポート URL」にも `support.html` を設定する。
 
-### B-2. 🔴 利用規約の作成・公開
-
-サブスクリプション条件（自動更新、解約方法、返金は Apple の規定に従う旨）を含める。
-
-### B-3. 🔴 サポート URL / マーケティング URL
-
-App Store Connect の必須項目。問い合わせ手段が分かるページを用意する
-（GitHub Pages の 1 ページで、サポート窓口 + FAQ で可）。
+デプロイ後、3つの URL が 200 で開けることを必ず確認する（リンク切れは審査でのリジェクト理由になる）。
 
 ### B-4. 🔴 有料 App 契約（Paid Applications Agreement）の締結
 
@@ -186,12 +213,10 @@ App Store Connect → ビジネス で以下を完了しないと、**課金ア�
 
 ### B-5. 🔴 スクリーンショット
 
-必須サイズ:
-
 | デバイス | 必要枚数 |
 |---------|---------|
 | iPhone 6.9インチ（またはApple指定の最新必須サイズ） | 最低 1、推奨 3〜5 |
-| iPad 13インチ | iPad 対応を維持する場合のみ必須 |
+| iPad 13インチ | iPad 対応を維持する場合のみ必須（A-6 参照） |
 
 ホーム / レベル選択 / 時計操作 / 結果・バッジ / ペイウォール あたりが候補。
 
@@ -199,7 +224,7 @@ App Store Connect → ビジネス で以下を完了しないと、**課金ア�
 
 `ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024@1x.png` は
 `flutter_launcher_icons` により生成済み。**アルファチャンネルが含まれていると提出時に弾かれる**ため、
-`assets/icon/icon.png` から生成された 1024px 画像が不透明であることを確認する。
+不透明であることを確認する。
 
 ---
 
@@ -215,49 +240,50 @@ App Store Connect → ビジネス で以下を完了しないと、**課金ア�
 
 ### C-2. 🔴 サブスクリプションの登録
 
-`lib/services/subscription_service.dart:7-8` で参照している Product ID を
-**完全一致**で登録する:
+`lib/services/subscription_service.dart:7-8` の Product ID を**完全一致**で登録する:
 
 | 定数 | Product ID | 種別 |
 |------|-----------|------|
 | `kMonthlySubId` | `clock_learning_premium_monthly` | 自動更新サブスクリプション（月） |
 | `kYearlySubId` | `clock_learning_premium_yearly` | 自動更新サブスクリプション（年） |
 
-必要作業:
-
 1. サブスクリプショングループを 1 つ作成し、両プランを同じグループに入れる（プラン変更のため）
-2. 各プランの**表示名・説明**を日本語で登録（`_PriceCard` がこの `title` を表示する → A-8 参照）
+2. 各プランの表示名・説明を日本語で登録
 3. 価格の設定
-4. 無料体験（Introductory Offer）を使うかを決定 → A-8 の文言と揃える
+4. 無料体験（Introductory Offer）を使うかを決定 → 使う場合は A-8 の文言を戻す
 5. **審査用スクリーンショット**を各サブスクリプションにアップロード（未設定だと審査が始まらない）
 6. サブスクリプション自体を「審査に提出」— アプリ本体のビルドと同時に提出する
 
+> アプリ側は期間表示を自前で持つようにしたため（A-8）、
+> App Store Connect の登録名に「月額」等を含めなくても期間は正しく表示される。
+
 ### C-3. 🔴 App プライバシー（Nutrition Label）の回答
 
-本アプリの実態: 外部サーバー送信なし、解析 SDK なし → **「データを収集していません」** で回答可能。
-A-4 の `PrivacyInfo.xcprivacy` の内容と矛盾しないようにする。
+外部サーバー送信なし、解析 SDK なし → **「データを収集していません」** で回答する。
+`PrivacyInfo.xcprivacy`（A-4）および `web/privacy.html`（B-1）と矛盾させないこと。
 
 ### C-4. 🔴 年齢別レーティングの回答
 
-暴力・成人向け要素なし → 4+ になる想定。
-**「App 内課金あり」のチェックを忘れずに**。
+暴力・成人向け要素なし → 4+ の想定。**「App 内課金あり」のチェックを忘れずに**。
 
-### C-5. 🟡 カテゴリの選択
+### C-5. 🟡 カテゴリ
 
-- 第一候補: 教育（Education）
-- キッズカテゴリを選ぶ場合は A-7 のペアレンタルゲートが前提
+- プライマリ: 教育（Education）
+- キッズカテゴリは選択しない（決定済み）。ペアレンタルゲートは実装済み（A-7）
 
 ### C-6. 🟡 審査メモ（App Review Information）
 
-- デモアカウント: 不要（ログイン機能なし）と明記
-- **課金の確認方法**: 「レベル選択画面の『ふつう』『むずかしい』をタップするとペイウォールが開きます」
-  のように、審査官が課金導線に到達する手順を具体的に書く。書かないと
-  「IAP が見つからない」で差し戻されるケースが多い
+以下を必ず記載する:
+
+- デモアカウント: 不要（ログイン機能なし）
+- **課金の確認手順**: 「ホーム →『とけいをあわせる』→ ロックされた『ふつう』をタップ →
+  保護者確認（表示された掛け算の答えを入力）→ 購入画面」。
+  ペアレンタルゲートの存在と突破方法を書かないと、審査官が課金画面に到達できず差し戻される
 - 端末内にのみデータを保存し、外部通信は課金処理のみである旨
 
 ### C-7. 🟢 その他の申告
 
-- 輸出コンプライアンス: 暗号化の使用なし（A-5 の `ITSAppUsesNonExemptEncryption` で自動化可）
+- 輸出コンプライアンス: 暗号化の使用なし（A-5 で Info.plist に記載済み）
 - アカウント削除要件: アカウント登録機能が無いため **対象外**
 - 広告識別子（IDFA）: 使用なし
 
@@ -267,14 +293,13 @@ A-4 の `PrivacyInfo.xcprivacy` の内容と矛盾しないようにする。
 
 ### D-1. 🔴 macOS + Xcode 環境
 
-iOS ビルドには macOS 実機が必須（現在の開発環境が Linux のみなら要確保）。
-App Store は**最新の Xcode SDK でビルドされたバイナリ**のみ受け付けるため、Xcode は最新安定版を使う。
+iOS ビルドには macOS 実機が必須。App Store は**最新の Xcode SDK でビルドされたバイナリ**のみ
+受け付けるため、Xcode は最新安定版を使う。
 
-### D-2. 🟡 Podfile のプラットフォーム指定
+### D-2. ✅ Podfile のプラットフォーム指定
 
-`ios/Podfile:2` の `platform :ios, '13.0'` がコメントアウトされたまま。
-`IPHONEOS_DEPLOYMENT_TARGET = 13.0` と揃うよう有効化しておくと、
-Pod 側の warning とビルド失敗を防げる。
+`ios/Podfile` の `platform :ios, '13.0'` を有効化し、
+`IPHONEOS_DEPLOYMENT_TARGET = 13.0` と揃えた。
 
 ### D-3. リリースビルド手順
 
@@ -289,13 +314,16 @@ flutter build ipa --release
 
 ### D-4. 🔴 Sandbox 環境での課金テスト
 
-App Store Connect → ユーザーとアクセス → Sandbox テスターを作成し、実機で以下を確認:
+App Store Connect → ユーザーとアクセス → Sandbox テスターを作成し、実機で確認する:
 
 - [ ] 月額・年額の商品情報が取得できる（`queryProductDetails` の `notFoundIDs` が空）
+- [ ] ペイウォールに「年額プラン / 1年ごとに自動更新・1か月あたり◯◯相当」が正しく表示される
 - [ ] 購入完了でプレミアム機能が解放される
 - [ ] アプリ再インストール後に「こうにゅうをふっげんする」で復元できる
+- [ ] **未購入の Sandbox アカウントで復元すると、プレミアム表示が解除される**（A-9 の変更点）
 - [ ] 購入キャンセル時にエラー表示が適切
 - [ ] 機内モード時に「ストアに接続できません」が表示される
+- [ ] ペアレンタルゲートが正解でのみ突破でき、誤答 3 回で閉じる
 
 > ⚠️ `notFoundIDs` に商品が入る状態のまま提出すると、審査官の画面で価格が出ず
 > **確実にリジェクト**される。C-2 の登録完了後、必ず実機で確認すること。
@@ -310,32 +338,34 @@ App Store Connect → ユーザーとアクセス → Sandbox テスターを作
 
 ```
 1. B-4 有料App契約 + 銀行/税務情報       ← 反映に日数がかかるので最初に
-2. A-1 Bundle ID 確定
+2. A-1 Bundle ID 確定（ドメイン方針の決定）
 3. C-1 App レコード作成
-4. B-1/B-2/B-3 法務ページ公開 → A-3 URL 差し替え
-5. A-4 PrivacyInfo.xcprivacy 追加 / A-5 Info.plist 整備
-6. A-7 カテゴリ決定（キッズなら ペアレンタルゲート実装）
-7. A-8 ペイウォール文言・期間表示の修正
-8. C-2 サブスクリプション登録（Product ID 完全一致）
-9. A-2 署名設定 → D-3 ビルド
-10. D-4 Sandbox 課金テスト
-11. B-5 スクリーンショット撮影
-12. C-3〜C-6 メタデータ入力 → 審査提出
+4. B-1〜B-3 の連絡先メールを差し替え → main にマージして GitHub Pages を更新
+                                       → 3つの URL が開けることを確認
+5. A-6 iPad 対応の可否を決定
+6. A-2 署名設定（macOS + Xcode）
+7. C-2 サブスクリプション登録（Product ID 完全一致）
+8. D-3 ビルド → D-4 Sandbox 課金テスト
+9. B-5 スクリーンショット撮影
+10. C-3〜C-6 メタデータ入力（審査メモにゲート突破手順を明記）→ 審査提出
 ```
 
 ---
 
-## F. リポジトリ内で今すぐ着手できるタスク（サマリ）
+## F. 対応状況サマリ
 
-| # | 対象ファイル | 内容 | 優先度 |
-|---|-------------|------|--------|
-| 1 | `ios/Runner.xcodeproj/project.pbxproj`, `android/app/build.gradle.kts` | Bundle ID / applicationId の変更 | 🔴 |
-| 2 | `ios/Runner/PrivacyInfo.xcprivacy`（新規） | プライバシーマニフェスト追加 | 🔴 |
-| 3 | `lib/constants/legal_urls.dart`（新規）, `paywall_screen.dart`, `settings_screen.dart` | 法的 URL の集約と実 URL 化 | 🔴 |
-| 4 | `ios/Runner/Info.plist` | `ITSAppUsesNonExemptEncryption` / `CFBundleLocalizations` / 向き整合 / 表示名 | 🟡 |
-| 5 | `lib/screens/paywall_screen.dart` | 期間表示の明示、無料体験文言の整合 | 🟡 |
-| 6 | `lib/widgets/`（新規） | ペアレンタルゲート（キッズカテゴリ採用時） | 🟡 |
-| 7 | `ios/Podfile` | `platform :ios, '13.0'` を有効化 | 🟡 |
-| 8 | `lib/services/subscription_service.dart` | 解約後に `is_premium` が戻らない問題への対応 | 🟢 |
-| 9 | `assets/audio/` | 音源追加、または音声トグルの非表示化 | 🟢 |
-| 10 | `web/index.html`, `web/manifest.json` | メタデータのテンプレート値を修正 | 🟢 |
+| # | 対象 | 内容 | 状態 |
+|---|------|------|------|
+| 1 | `project.pbxproj`, `build.gradle.kts` | Bundle ID / applicationId の変更 | 🔴 ドメイン方針の決定待ち |
+| 2 | `ios/Runner/PrivacyInfo.xcprivacy` | プライバシーマニフェスト追加 | ✅ |
+| 3 | `lib/constants/legal_urls.dart` ほか | 法的 URL の集約と実 URL 化 | ✅ |
+| 4 | `web/privacy.html` / `terms.html` / `support.html` | 法務・サポートページ作成 | ✅ 連絡先メールのみ要差し替え |
+| 5 | `ios/Runner/Info.plist` | 暗号化申告・ローカライズ・表示名・向き | ✅ |
+| 6 | `lib/widgets/parental_gate.dart` ほか | ペアレンタルゲート実装と適用 | ✅ |
+| 7 | `lib/screens/paywall_screen.dart` | 期間表示の明示、無料体験文言の修正 | ✅ |
+| 8 | `ios/Podfile` | `platform :ios, '13.0'` の有効化 | ✅ |
+| 9 | `web/index.html`, `web/manifest.json` | メタデータの日本語化 | ✅ |
+| 10 | `lib/services/subscription_service.dart` | 復元時に権利を取り消す経路を追加 | 🟡 一部（サーバー検証は未対応） |
+| 11 | `assets/audio/` | 音源追加、または音声トグルの非表示化 | 🟢 未対応（素材が必要） |
+| 12 | `ios/.../LaunchImage.imageset` | 起動画面の差し替え | 🟢 未対応（素材が必要） |
+| 13 | `TARGETED_DEVICE_FAMILY` | iPad 対応の可否 | 🟡 判断待ち |

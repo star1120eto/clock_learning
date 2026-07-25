@@ -8,19 +8,20 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() {
   testWidgets('ホーム画面が正しく表示される', (WidgetTester tester) async {
     // アプリをビルド
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(const MyApp(showOnboarding: false));
 
-    // ホーム画面の要素を確認
-    expect(find.text('とけいをまなぼう'), findsOneWidget);
-    expect(find.text('とけいをおぼえる'), findsOneWidget);
+    // ホーム画面のメニュー項目を確認
+    expect(find.text('とけいをよむ'), findsOneWidget);
+    expect(find.text('とけいをあわせる'), findsOneWidget);
+    expect(find.text('じゆうにさわる'), findsOneWidget);
     expect(find.text('すすみぐあいをみる'), findsOneWidget);
   });
 
   testWidgets('ホーム画面からレベル選択画面へ遷移できる', (WidgetTester tester) async {
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(const MyApp(showOnboarding: false));
 
-    // 「とけいをおぼえる」ボタンをタップ
-    await tester.tap(find.text('とけいをおぼえる'));
+    // 「とけいをあわせる」ボタンをタップ
+    await tester.tap(find.text('とけいをあわせる'));
     await tester.pumpAndSettle();
 
     // レベル選択画面の要素を確認
@@ -62,8 +63,8 @@ void main() {
         tester.view.devicePixelRatio = 1.0;
       });
 
-      await tester.pumpWidget(const MyApp());
-      await tester.tap(find.text('とけいをおぼえる'));
+      await tester.pumpWidget(const MyApp(showOnboarding: false));
+      await tester.tap(find.text('とけいをあわせる'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
       await tester.tap(find.text('かんたん'));
