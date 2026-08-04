@@ -197,9 +197,12 @@ iPad 実機/シミュレータでのレイアウト確認も必要。
 | `web/terms.html` | `/terms.html` | 全12条。サブスクの自動更新条件、解約手順、返金、禁止事項、免責、準拠法 |
 | `web/support.html` | `/support.html` | FAQ 8項目（対象年齢、無料範囲、解約、復元、データ引き継ぎ、音、課金防止、広告） |
 
-> 🔴 **公開前に必須**: 3ファイルとも問い合わせ先が `support@example.com` のプレースホルダ。
-> 実際の連絡先メールアドレスに差し替えること（各ファイルに `TODO` コメントを入れてある）。
-> App Store Connect の「サポート URL」にも `support.html` を設定する。
+問い合わせ先は 3 ファイルとも `yuutec171@gmail.com`（アプリ専用アドレス）に設定済み。
+
+App Store Connect 側でも、以下に同じアドレス / URL を設定する:
+- サポート URL → `https://star1120eto.github.io/clock_learning/support.html`
+- App Review Information の連絡先
+- EU デジタルサービス法の事業者情報（EU 圏では製品ページ上で**公開表示**される）
 
 デプロイ後、3つの URL が 200 で開けることを必ず確認する（リンク切れは審査でのリジェクト理由になる）。
 
