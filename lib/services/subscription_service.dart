@@ -20,6 +20,9 @@ class SubscriptionService extends ChangeNotifier {
   StreamSubscription<List<PurchaseDetails>>? _purchaseSubscription;
   String? _purchaseError;
 
+  /// ユーザー操作による復元中に、対象商品の購入が1件でも流れてきたか
+  bool _sawEntitlementDuringRestore = false;
+
   bool get isPremium => _isPremium;
   bool get isLoading => _isLoading;
   bool get storeAvailable => _storeAvailable;
@@ -85,6 +88,7 @@ class SubscriptionService extends ChangeNotifier {
         case PurchaseStatus.purchased:
         case PurchaseStatus.restored:
           if (_productIds.contains(purchase.productID)) {
+            _sawEntitlementDuringRestore = true;
             await _setPremium(true);
           }
           // in_app_purchase 3.x では pendingCompletionData が廃止されたため
@@ -123,11 +127,29 @@ class SubscriptionService extends ChangeNotifier {
   }
 
   /// 以前の購入を復元する（Apple審査要件: Restore Purchases ボタン必須）
+  ///
+  /// 復元の結果、対象商品の購入が1件も見つからなかった場合は
+  /// キャッシュしている `is_premium` を false に戻す。
+  /// 別の Apple ID / Google アカウントに切り替えた場合や、
+  /// 端末側のキャッシュだけが残っている場合に権利が残り続けるのを防ぐ。
+  ///
+  /// 注意: StoreKit 1 の復元は失効済みトランザクションも返し得るため、
+  /// これだけでは「解約・期限切れ」を確実に検知できない。
+  /// 正確な有効期限の判定にはサーバー側でのレシート検証が必要。
   Future<void> restorePurchases() async {
     _purchaseError = null;
+    _sawEntitlementDuringRestore = false;
     try {
       await InAppPurchase.instance.restorePurchases();
+
+      // 復元されたトランザクションは purchaseStream に非同期で届くため待機する
+      await Future.delayed(const Duration(seconds: 2));
+
+      if (!_sawEntitlementDuringRestore && _isPremium) {
+        await _setPremium(false);
+      }
     } catch (e) {
+      // 通信エラー等では権利を取り消さない（誤って有料ユーザーを締め出さないため）
       _purchaseError = 'こうにゅうのふっげんにしっぱいしました';
       notifyListeners();
     }

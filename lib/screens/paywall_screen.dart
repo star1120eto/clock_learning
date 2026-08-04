@@ -3,14 +3,14 @@ import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:clock_learning/constants/legal_urls.dart';
 import 'package:clock_learning/services/subscription_service.dart';
 
-// 本番環境では実際のURLに変更すること
-const String _kPrivacyPolicyUrl = 'https://example.com/privacy';
-const String _kTermsOfServiceUrl = 'https://example.com/terms';
-
 /// サブスクリプション購入画面（ペイウォール）
-/// Apple審査要件: Restore Purchases ボタン・プライバシーポリシー・利用規約が必須
+///
+/// この画面はペアレンタルゲート通過後にのみ表示されるため、文言は保護者向け。
+/// Apple審査要件: Restore Purchases ボタン・プライバシーポリシー・利用規約・
+/// サブスクリプションの期間と自動更新の明示が必須
 class PaywallScreen extends StatelessWidget {
   const PaywallScreen({super.key});
 
@@ -114,11 +114,14 @@ class PaywallScreen extends StatelessWidget {
                       // 法的リンク（App Store / Google Play 要件）
                       _buildLegalLinks(),
                       const SizedBox(height: 16),
-                      // サブスクリプション説明文（Apple審査要件）
+                      // サブスクリプション説明文（Apple審査要件 3.1.2）
                       const Text(
-                        'サブスクリプションはApple ID / Google アカウントに課金されます。'
-                        '無料体験期間終了後、自動的に更新されます。'
-                        '購読の管理・キャンセルはデバイスの設定から行えます。',
+                        'プレミアムプランは自動更新のサブスクリプションです。'
+                        '料金は購入確定時に Apple ID / Google アカウントに請求されます。'
+                        '期間終了の24時間以上前に自動更新を解除しない限り、'
+                        '同じ期間・同じ料金で自動的に更新されます。'
+                        '解約は、iOS は「設定 > ユーザー名 > サブスクリプション」、'
+                        'Android は「Google Play > お支払いと定期購入」から行えます。',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: Colors.grey,
@@ -235,6 +238,9 @@ class PaywallScreen extends StatelessWidget {
         if (yearly != null)
           _PriceCard(
             product: yearly,
+            planLabel: '年額プラン',
+            renewalLabel: '1年ごとに自動更新',
+            perMonthLabel: _perMonthLabel(yearly),
             isRecommended: true,
             badge: 'おとく！',
             onTap: () => _onPurchaseTap(context, service, yearly),
@@ -243,11 +249,20 @@ class PaywallScreen extends StatelessWidget {
         if (monthly != null)
           _PriceCard(
             product: monthly,
+            planLabel: '月額プラン',
+            renewalLabel: '1か月ごとに自動更新',
             isRecommended: false,
             onTap: () => _onPurchaseTap(context, service, monthly),
           ),
       ],
     );
+  }
+
+  /// 年額プランの「1か月あたり」相当額。「おとく！」表示の根拠として併記する。
+  static String? _perMonthLabel(ProductDetails yearly) {
+    if (yearly.rawPrice <= 0) return null;
+    final perMonth = (yearly.rawPrice / 12).round();
+    return '1か月あたり ${yearly.currencySymbol}$perMonth 相当';
   }
 
   Widget _buildStoreUnavailableMessage() {
@@ -277,7 +292,7 @@ class PaywallScreen extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         TextButton(
-          onPressed: () => _launchUrl(_kPrivacyPolicyUrl),
+          onPressed: () => _launchUrl(kPrivacyPolicyUrl),
           child: const Text(
             'プライバシーポリシー',
             style: TextStyle(fontSize: 12),
@@ -285,7 +300,7 @@ class PaywallScreen extends StatelessWidget {
         ),
         const Text('・', style: TextStyle(color: Colors.grey)),
         TextButton(
-          onPressed: () => _launchUrl(_kTermsOfServiceUrl),
+          onPressed: () => _launchUrl(kTermsOfServiceUrl),
           child: const Text('りようきやく', style: TextStyle(fontSize: 12)),
         ),
       ],
@@ -392,14 +407,28 @@ class _AlreadyPremiumBody extends StatelessWidget {
 /// 価格カードウィジェット
 class _PriceCard extends StatelessWidget {
   final ProductDetails product;
+
+  /// プラン名（月額 / 年額）。App Store Connect 側の登録名に依存せず、
+  /// 期間が必ず表示されるようアプリ側で持つ（Apple審査要件 3.1.2）。
+  final String planLabel;
+
+  /// 更新サイクルの説明文
+  final String renewalLabel;
+
+  /// 年額プランの「1か月あたり」相当額（月額プランでは null）
+  final String? perMonthLabel;
+
   final bool isRecommended;
   final String? badge;
   final VoidCallback onTap;
 
   const _PriceCard({
     required this.product,
+    required this.planLabel,
+    required this.renewalLabel,
     required this.isRecommended,
     required this.onTap,
+    this.perMonthLabel,
     this.badge,
   });
 
@@ -429,7 +458,7 @@ class _PriceCard extends StatelessWidget {
             child: Column(
               children: [
                 Text(
-                  product.title.replaceAll(RegExp(r'\s*\(.*\)$'), ''),
+                  planLabel,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -442,6 +471,17 @@ class _PriceCard extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  perMonthLabel == null
+                      ? renewalLabel
+                      : '$renewalLabel・$perMonthLabel',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isRecommended ? Colors.white70 : Colors.black54,
                   ),
                 ),
               ],

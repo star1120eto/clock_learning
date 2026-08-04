@@ -84,6 +84,7 @@ CCSDDは、Kiroスタイルのスペック駆動開発をCursor Composer上で�
 #### 開発・ビルド
 
 - [BUILD_GUIDE.md](./BUILD_GUIDE.md) - ビルドガイド（各プラットフォーム向け）
+- [APP_STORE_RELEASE_CHECKLIST.md](./APP_STORE_RELEASE_CHECKLIST.md) - App Store 公開までの残作業チェックリスト
 - [AGENTS.md](./AGENTS.md) - AI-DLCとSpec Driven Developmentの詳細
 
 #### 品質・テスト

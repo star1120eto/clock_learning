@@ -1,4 +1,4 @@
-package com.example.clock_learning
+package tech.starfy.clocklearning
 
 import io.flutter.embedding.android.FlutterActivity
 
