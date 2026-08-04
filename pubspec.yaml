@@ -71,6 +71,10 @@ dev_dependencies:
   # App icon generator
   flutter_launcher_icons: ^0.14.3
 
+  # in_app_purchase のテスト用フェイクプラットフォームを実装するために使用
+  # （in_app_purchase の推移的依存として既に解決されているバージョンに合わせる）
+  in_app_purchase_platform_interface: ^1.4.0
+
 flutter_launcher_icons:
   android: true
   ios: true

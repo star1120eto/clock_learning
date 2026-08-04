@@ -23,6 +23,12 @@ class SubscriptionService extends ChangeNotifier {
   /// ユーザー操作による復元中に、対象商品の購入が1件でも流れてきたか
   bool _sawEntitlementDuringRestore = false;
 
+  /// [restorePurchases] が purchaseStream の到着を待つ猶予時間。
+  /// テストから `Duration.zero` に差し替えられるよう注入可能にしている
+  /// （本番のデフォルト値は変わらない）。
+  @visibleForTesting
+  static Duration restoreGraceDelay = const Duration(seconds: 2);
+
   bool get isPremium => _isPremium;
   bool get isLoading => _isLoading;
   bool get storeAvailable => _storeAvailable;
@@ -143,7 +149,7 @@ class SubscriptionService extends ChangeNotifier {
       await InAppPurchase.instance.restorePurchases();
 
       // 復元されたトランザクションは purchaseStream に非同期で届くため待機する
-      await Future.delayed(const Duration(seconds: 2));
+      await Future.delayed(restoreGraceDelay);
 
       if (!_sawEntitlementDuringRestore && _isPremium) {
         await _setPremium(false);

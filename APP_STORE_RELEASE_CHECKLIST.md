@@ -152,6 +152,67 @@ iPad 実機/シミュレータでのレイアウト確認も必要。
 正確な有効期限判定にはサーバー側レシート検証 / StoreKit 2 への移行が必要。
 審査は現状でも通るため、初回リリース後の課題とする。
 
+### A-14. 🟡 課金要素のテストカバレッジ（1ファイルに既知の実行時課題あり）
+
+`in_app_purchase` の実装を読み込み、`InAppPurchasePlatform.instance` を差し替える
+フェイク基盤（`test/helpers/fake_in_app_purchase_platform.dart`）を追加し、
+以下のテストを整備した。
+
+| ファイル | 内容 | 動作確認 |
+|---------|------|---------|
+| `test/services/subscription_service_test.dart` | ストア利用不可・商品ロード・購入成功/エラー/キャンセル・復元（見つかる/見つからない/例外）・`debugSetPremium`・起動時キャッシュ復元の11ケース | ✅ 単体・全体実行とも安定してpass |
+| `test/screens/paywall_screen_test.dart` | ロード中・ストア利用不可・価格表示・購入/復元フロー・法的リンクの11ケース | ✅ 単体・全体実行とも安定してpass |
+| `test/screens/level_select_screen_test.dart` | ロック表示・ペアレンタルゲート通過/キャンセル/誤答超過・加入済みの直接遷移の6ケース | ⚠️ 下記参照 |
+
+> ⚠️ **既知の課題**: `level_select_screen_test.dart` は、この開発環境（サンドボックス）では
+> 1本目のテスト（`未加入の場合...`）の `pumpAndSettle()` が indefinite に停止する現象を
+> 確認した。以下を切り分けたが原因を特定できていない。
+>
+> - 単体実行・他ファイルとの組み合わせ実行・ファイル順序・`flutter clean` 後の再実行、
+>   いずれでも再現する（環境固有の一過性のフレークではなさそう）
+> - `MaterialApp.home` に直接置く構成／`Navigator.push` 経由で開く構成（`paywall_screen_test.dart`
+>   と同一パターン）のどちらでも再現する
+> - `paywall_screen_test.dart` は全く同じ `installFakeInAppPurchasePlatform` の仕組みを使い、
+>   同種の `SubscriptionService` 駆動を行っているが、安定して pass する
+> - `LevelSelectScreen` は `GameScreen`/`ClockReadingScreen` を経由してより大きな依存グラフを
+>   引き込むが、`FutureBuilder`/`StreamBuilder`/無限アニメーション等の明示的な原因は
+>   コードレビューでは見つからなかった
+>
+> テスト自体のロジックは `paywall_screen_test.dart` で実証済みのパターンをそのまま
+> 踏襲しており、コードレビュー上は妥当と判断しているが、**この環境でこのファイルを
+> `flutter test` に含めると、CI やローカル実行がハングする実害がある**。
+> マージ前に、実際の開発マシン / CI 環境で以下を確認すること:
+>
+> ```bash
+> flutter test test/screens/level_select_screen_test.dart
+> ```
+>
+> 別環境で正常に完走する場合はこの注記を削除してよい。再現する場合は、
+> `LevelSelectScreen` を直接 `pumpWidget` せず `ChangeNotifierProvider` 経由の
+> `SubscriptionService` 実体を避ける（テスト用のダブルに差し替えられるよう
+> `SubscriptionService` 側にインターフェースを切り出す等）設計変更が必要になる可能性がある。
+
+実装上の知見（同種のテストを今後書く際に有効）:
+- `InAppPurchase.instance` は初回アクセス時に実プラットフォームを自己登録し
+  `InAppPurchasePlatform.instance` を上書きするため、フェイクのインストールは
+  一度実プラットフォーム登録を消費してから行う必要がある（`installFakeInAppPurchasePlatform`）
+- `testWidgets` 内では `Future.delayed`（実タイマー）は明示的に `pump()` しない限り
+  解決しない。素の `await Future.delayed(...)` は使わず、`tester.pump()` /
+  `pumpAndSettle()` を通す
+- 無限に回転する `CircularProgressIndicator` が画面にある間は `pumpAndSettle()` が
+  収束しないため、ロード中状態の検証には個別の `pump()` を使う
+- `restorePurchases()` の猶予時間は `@visibleForTesting` な
+  `SubscriptionService.restoreGraceDelay` で `Duration.zero` に差し替え可能にした
+  （本番のデフォルト値である2秒は変えていない）
+
+テストを書く過程で見つかった既存実装の挙動（バグではなく設計上の制約として記録）:
+- `PaywallScreen._onPurchaseTap` は `purchaseSubscription()` の直後に
+  `isPremium` を見て成功スナックバー表示・pop を行うが、実プラットフォームでは
+  購入確定は常にそれより後に `purchaseStream` 経由で非同期に届くため、
+  この成功スナックバー分岐は実運用でほぼ到達しない。ユーザーは最終的に
+  `Consumer` の再描画で加入済み画面に切り替わるため機能的な支障はないが、
+  購入直後の明示的なフィードバックが欠けている。修正は範囲外として見送った
+
 ### A-10. 🟢 音声アセットが空（未対応）
 
 `assets/audio/` は `.gitkeep` のみで、`audio_service.dart` が参照する

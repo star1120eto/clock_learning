@@ -1,17 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:clock_learning/widgets/parental_gate.dart';
-
-/// ダイアログに表示されている「NN × N = ?」から正解を取り出す
-int _answerFromQuestion(WidgetTester tester) {
-  final text = tester
-      .widgetList<Text>(find.byType(Text))
-      .map((w) => w.data)
-      .whereType<String>()
-      .firstWhere((s) => s.contains('×'));
-  final match = RegExp(r'(\d+)\s*×\s*(\d+)').firstMatch(text)!;
-  return int.parse(match.group(1)!) * int.parse(match.group(2)!);
-}
+import '../helpers/parental_gate_test_utils.dart';
 
 /// ゲートを開くだけのテスト用ホスト
 Widget _host(void Function(bool) onResult) {
@@ -39,7 +29,7 @@ void main() {
 
       await tester.enterText(
         find.byType(TextField),
-        '${_answerFromQuestion(tester)}',
+        '${answerFromQuestion(tester)}',
       );
       await tester.tap(find.text('確認'));
       await tester.pumpAndSettle();
@@ -65,7 +55,7 @@ void main() {
       await tester.tap(find.text('open'));
       await tester.pumpAndSettle();
 
-      final firstAnswer = _answerFromQuestion(tester);
+      final firstAnswer = answerFromQuestion(tester);
       await tester.enterText(find.byType(TextField), '${firstAnswer + 1}');
       await tester.tap(find.text('確認'));
       await tester.pumpAndSettle();
@@ -87,7 +77,7 @@ void main() {
       for (var i = 0; i < 3; i++) {
         await tester.enterText(
           find.byType(TextField),
-          '${_answerFromQuestion(tester) + 1}',
+          '${answerFromQuestion(tester) + 1}',
         );
         await tester.tap(find.text('確認'));
         await tester.pumpAndSettle();
