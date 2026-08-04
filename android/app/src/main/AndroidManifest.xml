@@ -4,7 +4,7 @@
     <!-- インターネット接続（ストア通信）に必須 -->
     <uses-permission android:name="android.permission.INTERNET" />
     <application
-        android:label="clock_learning"
+        android:label="とけいがくしゅう"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

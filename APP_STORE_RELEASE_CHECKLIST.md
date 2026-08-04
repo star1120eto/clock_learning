@@ -4,7 +4,7 @@ Apple Developer Program 登録完了時点（2026-07）での、iOS 版 App Stor
 
 - 調査対象コミット: `1f5d02e`（main）
 - 方針決定済み: **教育カテゴリ（4+）＋ペアレンタルゲート実装**で公開する
-- Bundle ID: ドメイン取得方針の検討中のため**未確定・未変更**
+- Bundle ID: **`tech.starfy.clocklearning`** に確定済み（所有ドメイン `starfy.tech` に基づく）
 
 凡例:
 - 🔴 **ブロッカー** … 未対応だと提出できない / ほぼ確実にリジェクトされる
@@ -16,25 +16,27 @@ Apple Developer Program 登録完了時点（2026-07）での、iOS 版 App Stor
 
 ## A. リポジトリ内のコード / プロジェクト設定
 
-### A-1. 🔴 Bundle Identifier が `com.example.*` のまま
+### A-1. ✅ Bundle Identifier
 
-| 箇所 | 現在の値 |
-|------|---------|
-| `ios/Runner.xcodeproj/project.pbxproj` (3箇所) | `com.example.clockLearning` |
-| 同上 RunnerTests (3箇所) | `com.example.clockLearning.RunnerTests` |
-| `android/app/build.gradle.kts` `namespace` / `applicationId` | `com.example.clock_learning` |
+所有ドメイン `starfy.tech` に基づき **`tech.starfy.clocklearning`** に確定・変更した。
 
-`com.example.*` は App Store Connect に登録できない。所有ドメインを逆順にした一意な ID
-に変更し、**App Store Connect で同じ ID の App を作成**する。
+| 箇所 | 変更後 |
+|------|--------|
+| `ios/Runner.xcodeproj/project.pbxproj`（3箇所） | `tech.starfy.clocklearning` |
+| 同上 RunnerTests（3箇所） | `tech.starfy.clocklearning.RunnerTests` |
+| `android/app/build.gradle.kts` `namespace` / `applicationId` | `tech.starfy.clocklearning` |
+| `android/app/src/main/kotlin/tech/starfy/clocklearning/MainActivity.kt` | パッケージ宣言とディレクトリを移動 |
+| `android/app/src/main/AndroidManifest.xml` `android:label` | `とけいがくしゅう`（iOS の表示名と統一） |
 
-ドメインを取得しない場合は、GitHub Pages のドメインに基づく
-`io.github.<ユーザー名>.clocklearning` が実務上の定番。
+> ⚠️ **App Store Connect / Google Play Console に登録した後は変更できない。**
+> App レコード作成時はこの ID を使うこと。
 
-> ⚠️ Bundle ID は登録後に変更できない。App Store Connect で App レコードを作る前に確定させること。
-> Android の `applicationId` も同時に決めておく（Play 公開時に同じく変更不可）。
+macOS / Linux / Windows の各 runner 設定には `com.example` が残っているが、
+これらのプラットフォームは配布対象外のため変更していない。
 
-変更時にあわせて更新する箇所:
-- `lib/constants/legal_urls.dart` の `kSiteBaseUrl`（独自ドメインで法務ページを公開する場合）
+法務ページを独自ドメインに移す場合は `lib/constants/legal_urls.dart` の
+`kSiteBaseUrl` を差し替える（例: `clock.starfy.tech` を GitHub Pages に CNAME で向ける）。
+Bundle ID とページの URL は一致している必要はないため、**急ぐ作業ではない**。
 
 ### A-2. 🔴 署名設定（Team / Provisioning Profile）が未設定
 
@@ -201,15 +203,24 @@ iPad 実機/シミュレータでのレイアウト確認も必要。
 
 デプロイ後、3つの URL が 200 で開けることを必ず確認する（リンク切れは審査でのリジェクト理由になる）。
 
-### B-4. 🔴 有料 App 契約（Paid Applications Agreement）の締結
+### B-4. 🟡 進行中 — 有料 App 契約（Paid Applications Agreement）
 
-App Store Connect → ビジネス で以下を完了しないと、**課金アイテムが審査に出せない**:
+課金アイテムを審査に出すには、この契約が「有効」になっている必要がある。
+2026年8月4日時点の状況:
 
-- 有料 App 契約に同意
-- 銀行口座情報の登録
-- 税務情報（日本の居住者情報 / W-8BEN 等）の提出
+| 項目 | 状態 |
+|------|------|
+| 無料アプリ契約 | ✅ 有効 |
+| 有料アプリ契約 | 🟡 ユーザ情報を保留中 |
+| 銀行口座（ゆうちょ銀行） | 🟡 処理中（Apple 側の検証待ち・操作不要） |
+| U.S. Form W-8BEN | ✅ 有効（第12条・0%・Income from the sale of applications で申請） |
+| U.S. Certificate of Foreign Status | 🔴 税金情報が不足（「税金情報を追加」から入力が必要） |
+| デジタルサービス法（EU DSA） | ✅ 有効 |
 
-反映まで日数がかかることがあるため、**最優先で着手すべき項目**。
+残作業は納税フォームの不足分の入力と、銀行口座の検証完了待ち。
+
+> ゆうちょ銀行は通帳の記号・番号ではなく、他行振込用の店名（3桁）・預金種目・
+> 口座番号（7桁）を登録する。検証がエラーになる場合はここを疑う。
 
 ### B-5. 🔴 スクリーンショット
 
@@ -235,7 +246,7 @@ App Store Connect → ビジネス で以下を完了しないと、**課金ア�
 - プラットフォーム: iOS
 - 名前（30文字以内）: 例「とけいがくしゅう」— **App Store 全体で一意**である必要あり
 - プライマリ言語: 日本語
-- Bundle ID: A-1 で確定したもの
+- Bundle ID: `tech.starfy.clocklearning`
 - SKU: 任意の管理用文字列
 
 ### C-2. 🔴 サブスクリプションの登録
@@ -338,7 +349,6 @@ App Store Connect → ユーザーとアクセス → Sandbox テスターを作
 
 ```
 1. B-4 有料App契約 + 銀行/税務情報       ← 反映に日数がかかるので最初に
-2. A-1 Bundle ID 確定（ドメイン方針の決定）
 3. C-1 App レコード作成
 4. B-1〜B-3 の連絡先メールを差し替え → main にマージして GitHub Pages を更新
                                        → 3つの URL が開けることを確認
@@ -356,7 +366,7 @@ App Store Connect → ユーザーとアクセス → Sandbox テスターを作
 
 | # | 対象 | 内容 | 状態 |
 |---|------|------|------|
-| 1 | `project.pbxproj`, `build.gradle.kts` | Bundle ID / applicationId の変更 | 🔴 ドメイン方針の決定待ち |
+| 1 | `project.pbxproj`, `build.gradle.kts` ほか | Bundle ID を `tech.starfy.clocklearning` に変更 | ✅ |
 | 2 | `ios/Runner/PrivacyInfo.xcprivacy` | プライバシーマニフェスト追加 | ✅ |
 | 3 | `lib/constants/legal_urls.dart` ほか | 法的 URL の集約と実 URL 化 | ✅ |
 | 4 | `web/privacy.html` / `terms.html` / `support.html` | 法務・サポートページ作成 | ✅ 連絡先メールのみ要差し替え |
