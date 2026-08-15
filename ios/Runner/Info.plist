@@ -32,13 +32,9 @@
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
-	<!-- アプリ側で縦向き固定しているため（lib/main.dart）、宣言も縦向きのみに揃える -->
+	<!-- アプリ側で縦向き固定しているため（lib/main.dart）、宣言も縦向きのみに揃える。
+	     iPad 非対応（TARGETED_DEVICE_FAMILY = "1"）のため ~ipad キーは不要。 -->
 	<key>UISupportedInterfaceOrientations</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationPortraitUpsideDown</string>
-	</array>
-	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationPortraitUpsideDown</string>

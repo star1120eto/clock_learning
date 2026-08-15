@@ -87,12 +87,19 @@ Runner グループと Copy Bundle Resources に登録済み。
 - `UISupportedInterfaceOrientations`（iPhone / iPad とも）を縦向きのみに変更し、
   `lib/main.dart` の `setPreferredOrientations` と整合させた
 
-### A-6. 🟡 iPad 対応の扱いを決める
+### A-6. ✅ iPad 対応（初回リリースはiPhoneのみ・iPad対応は公開後のアップデートで）
 
-`TARGETED_DEVICE_FAMILY = "1,2"`（iPhone + iPad）のまま**変更していない**。
-維持する場合は **13インチ iPad のスクリーンショットが必須**で、
-iPad 実機/シミュレータでのレイアウト確認も必要。
-初回リリースを軽くするなら `1`（iPhone のみ）に変更する。
+`TARGETED_DEVICE_FAMILY` を `"1,2"` → `"1"`（iPhoneのみ）に変更した
+（`ios/Runner.xcodeproj/project.pbxproj` 3箇所）。あわせて
+`ios/Runner/Info.plist` の `UISupportedInterfaceOrientations~ipad` キーを削除
+（iPad 非対応のため不要）。
+
+これにより **iPad 13インチのスクリーンショットは不要**になり、B-5 のスクリーンショット
+撮影対象は iPhone のみでよい。
+
+iPad対応は公開後のアップデートで追加する方針。再度対応する場合は
+`TARGETED_DEVICE_FAMILY = "1,2"` に戻し、`~ipad` の向き指定を復活させたうえで、
+iPad実機/シミュレータでのレイアウト確認とスクリーンショットが必要になる。
 
 ### A-7. ✅ ペアレンタルゲート（保護者確認）
 
@@ -213,19 +220,22 @@ iPad 実機/シミュレータでのレイアウト確認も必要。
   `Consumer` の再描画で加入済み画面に切り替わるため機能的な支障はないが、
   購入直後の明示的なフィードバックが欠けている。修正は範囲外として見送った
 
-### A-10. 🟢 音声アセットが空（未対応）
+### A-10. ✅ 音声アセットが空 → 設定画面のトグルを非表示化
 
 `assets/audio/` は `.gitkeep` のみで、`audio_service.dart` が参照する
 `audio/correct.ogg` 等が存在しない。`try/catch` で握り潰しているためクラッシュはしないが、
-**設定画面に「おとをならす」トグルがあるのに音が一切鳴らない**。
-機能が動作しないことをリジェクト理由にされ得る（Guideline 2.1）。
+**「おとをならす」トグルがあるのに音が一切鳴らない**状態は機能が動作しないことを
+リジェクト理由にされ得る（Guideline 2.1）ため、音源を用意する方針が決まるまで
+`lib/screens/settings_screen.dart` の「おと」セクション（トグル本体）を非表示にした。
+`AudioService` 自体・ゲーム内の再生呼び出しは変更していない（音源追加時にすぐ復活できる）。
 
-音源そのものは自動生成できないため未対応。以下のいずれかを選ぶ:
-1. 効果音（正解 / 不正解 / バッジ獲得）を用意して `assets/audio/` に配置する
-2. 音源が用意できるまで、設定画面の音声トグルを非表示にする
+音源は初回リリース後に追加する方針。追加する際は:
+1. 効果音（正解 / 不正解 / バッジ獲得）を `assets/audio/` に配置する
+2. `settings_screen.dart` に音声トグル（`SwitchListTile` + `AudioService` の
+   ミュート状態表示）を復活させる（過去のコミット履歴に実装例あり）
 
 `assets/animations/` も空。Lottie を使わないなら `pubspec.yaml` から
-`lottie` 依存を削除するとバイナリサイズが減る。
+`lottie` 依存を削除するとバイナリサイズが減る（未対応のまま）。
 
 ### A-11. 🟢 起動画面が Flutter デフォルト（未対応）
 
@@ -440,6 +450,6 @@ App Store Connect → ユーザーとアクセス → Sandbox テスターを作
 | 8 | `ios/Podfile` | `platform :ios, '13.0'` の有効化 | ✅ |
 | 9 | `web/index.html`, `web/manifest.json` | メタデータの日本語化 | ✅ |
 | 10 | `lib/services/subscription_service.dart` | 復元時に権利を取り消す経路を追加 | 🟡 一部（サーバー検証は未対応） |
-| 11 | `assets/audio/` | 音源追加、または音声トグルの非表示化 | 🟢 未対応（素材が必要） |
+| 11 | `lib/screens/settings_screen.dart` | 音声トグルを非表示化（音源は公開後に追加予定） | ✅ |
 | 12 | `ios/.../LaunchImage.imageset` | 起動画面の差し替え | 🟢 未対応（素材が必要） |
-| 13 | `TARGETED_DEVICE_FAMILY` | iPad 対応の可否 | 🟡 判断待ち |
+| 13 | `TARGETED_DEVICE_FAMILY`, `Info.plist` | iPhoneのみに変更（iPad対応は公開後） | ✅ |

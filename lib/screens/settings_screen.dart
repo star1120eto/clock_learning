@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:clock_learning/constants/legal_urls.dart';
 import 'package:clock_learning/services/subscription_service.dart';
-import 'package:clock_learning/services/audio_service.dart';
 import 'package:clock_learning/screens/paywall_screen.dart';
 import 'package:clock_learning/widgets/parental_gate.dart';
 
@@ -17,24 +16,6 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  AudioService? _audioService;
-  bool _isMuted = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadAudioSettings();
-  }
-
-  Future<void> _loadAudioSettings() async {
-    final service = await AudioService.create();
-    if (!mounted) return;
-    setState(() {
-      _audioService = service;
-      _isMuted = service.getSettings().isMuted;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     final subscription = context.watch<SubscriptionService>();
@@ -47,22 +28,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: ListView(
         children: [
           // ── おと ──────────────────────────────
-          _SectionHeader(label: 'おと'),
-          SwitchListTile(
-            secondary: Icon(
-              _isMuted ? Icons.volume_off : Icons.volume_up,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            title: const Text('おとをならす', style: TextStyle(fontSize: 18)),
-            value: !_isMuted,
-            onChanged: _audioService == null
-                ? null
-                : (value) async {
-                    await _audioService!.setMuted(!value);
-                    setState(() => _isMuted = !value);
-                  },
-          ),
-          const Divider(height: 1),
+          // 音源（assets/audio/）が未実装のため、トグルを一旦非表示にしている。
+          // 音源を追加する際は、AudioService.create() で初期化した
+          // AudioService の isMuted 状態を表示する SwitchListTile を復活させる
+          // （過去のコミット履歴に実装例あり）。
 
           // ── プレミアム ────────────────────────
           _SectionHeader(label: 'プレミアム'),
