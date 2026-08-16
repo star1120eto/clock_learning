@@ -316,13 +316,15 @@ iPad 対応は公開後のアップデートに回したため（A-6）、iPad �
 
 ## C. App Store Connect 側の作業
 
-### C-1. 🔴 App レコードの作成
+### C-1. ✅ App レコードの作成
 
 - プラットフォーム: iOS
-- 名前（30文字以内）: 例「とけいがくしゅう」— **App Store 全体で一意**である必要あり
+- 名前: `とけいがくしゅう`
 - プライマリ言語: 日本語
-- Bundle ID: `tech.starfy.clocklearning`
-- SKU: 任意の管理用文字列
+- Bundle ID: `tech.starfy.clocklearning`（developer.apple.com で App ID 登録済み、In-App Purchase capability 有効化済み）
+- SKU: `clocklearning001`
+
+App Store Connect 上に「とけいがくしゅう」バージョン1.0（提出準備中）が作成済み。
 
 ### C-2. 🔴 サブスクリプションの登録
 
