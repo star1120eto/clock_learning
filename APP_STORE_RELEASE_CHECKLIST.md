@@ -252,24 +252,36 @@ App Store Connect 側でも、以下に同じアドレス / URL を設定する:
 - Bundle ID: `tech.starfy.clocklearning`
 - SKU: 任意の管理用文字列
 
-### C-2. 🔴 サブスクリプションの登録
+### C-2. ✅ サブスクリプションの登録
 
-`lib/services/subscription_service.dart:7-8` の Product ID を**完全一致**で登録する:
+`lib/services/subscription_service.dart:7-8` の Product ID と完全一致で登録済み。
 
-| 定数 | Product ID | 種別 |
-|------|-----------|------|
-| `kMonthlySubId` | `clock_learning_premium_monthly` | 自動更新サブスクリプション（月） |
-| `kYearlySubId` | `clock_learning_premium_yearly` | 自動更新サブスクリプション（年） |
+| 定数 | Product ID | 種別 | 価格（日本） | ステータス |
+|------|-----------|------|------|------|
+| `kMonthlySubId` | `clock_learning_premium_monthly` | 自動更新サブスクリプション（月） | ¥480 | 審査準備完了 |
+| `kYearlySubId` | `clock_learning_premium_yearly` | 自動更新サブスクリプション（年） | ¥4,800 | 審査準備完了 |
 
-1. サブスクリプショングループを 1 つ作成し、両プランを同じグループに入れる（プラン変更のため）
-2. 各プランの表示名・説明を日本語で登録
-3. 価格の設定
-4. 無料体験（Introductory Offer）を使うかを決定 → 使う場合は A-8 の文言を戻す
-5. **審査用スクリーンショット**を各サブスクリプションにアップロード（未設定だと審査が始まらない）
-6. サブスクリプション自体を「審査に提出」— アプリ本体のビルドと同時に提出する
+- サブスクリプショングループ「プレミアムプラン」（グループID: `22312547`）に両プランを登録
+- グループ表示名（App Store のローカリゼーション）: 「とけいがくしゅう」（アプリ名を使用）
+- 各プランの表示名・説明（日本語）、価格（日本 ¥480 / ¥4,800、他174地域は自動換算）を設定済み
+- **無料体験（Introductory Offer）は使わない方針で確定** → A-8 の文言修正（無料体験の記述削除）はそのままで問題なし。コード変更不要
+- 各プランに審査用スクリーンショットをアップロード済み（iOSシミュレータ + StoreKitで実際にペイウォールを表示して撮影）
+- macOS実機でのシミュレータ動作確認により、月額・年額とも `queryProductDetails` で正しく取得できることを確認済み（`notFoundIDs` が空になることを確認）
+
+残作業:
+- サブスクリプション自体の「審査に提出」は、**アプリ本体のビルドと同時に行う**必要があるため（Apple仕様）、D-3のビルド提出時にまとめて行う
 
 > アプリ側は期間表示を自前で持つようにしたため（A-8）、
 > App Store Connect の登録名に「月額」等を含めなくても期間は正しく表示される。
+
+> 📌 macOS側のセットアップ手順（今回新たに判明した実務メモ）:
+> - `xcode-select -p` が `/Library/Developer/CommandLineTools` を指している場合、
+>   `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer` で切り替えてから
+>   `sudo xcodebuild -license accept` を実行する
+> - iOSシミュレータランタイムが未インストールの場合は `xcodebuild -downloadPlatform iOS`
+> - CocoaPods未インストールの場合は `brew install cocoapods`（Homebrewが無ければ `sudo gem install cocoapods`）
+> - 上記を済ませれば `cd ios && pod install --repo-update && cd .. && flutter run -d "<シミュレータ名>"` でシミュレータ起動可能
+> - シミュレータの Apple ID / ストア地域が日本以外だと、ペイウォールの価格は USD 等で表示される（バグではない。実機で日本のApple IDを使えば¥表示になる）
 
 ### C-3. 🔴 App プライバシー（Nutrition Label）の回答
 
