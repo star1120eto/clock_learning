@@ -150,7 +150,7 @@ class SubscriptionService extends ChangeNotifier {
       }
     } catch (e) {
       // 通信エラー等では権利を取り消さない（誤って有料ユーザーを締め出さないため）
-      _purchaseError = 'こうにゅうのふっげんにしっぱいしました';
+      _purchaseError = 'こうにゅうのふくげんにしっぱいしました';
       notifyListeners();
     }
   }

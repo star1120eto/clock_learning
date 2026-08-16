@@ -115,7 +115,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ],
           ListTile(
             leading: const Icon(Icons.restore),
-            title: const Text('こうにゅうをふっげんする', style: TextStyle(fontSize: 16)),
+            title: const Text('こうにゅうをふくげんする', style: TextStyle(fontSize: 16)),
             onTap: () => _onRestoreTap(context, subscription),
           ),
           const Divider(height: 1),
