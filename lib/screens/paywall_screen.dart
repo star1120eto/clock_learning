@@ -107,7 +107,7 @@ class PaywallScreen extends StatelessWidget {
                       TextButton(
                         onPressed: () => _onRestoreTap(context, service),
                         child: const Text(
-                          'こうにゅうをふっげんする',
+                          'こうにゅうをふくげんする',
                           style: TextStyle(fontSize: 15),
                         ),
                       ),
