@@ -14,6 +14,52 @@ Apple Developer Program 登録完了時点（2026-07）での、iOS 版 App Stor
 
 ---
 
+## 🚩 現在のセッション状況（2026-08-18 時点・引き継ぎメモ）
+
+**作業ブランチ**: `claude/clock-learning-app-store-l1yaaa`（origin にpush済み、最新コミット `cedfb13`）
+**Xcode作業マシン**: `starfy@YutanoMac-mini`（macOS、Apple Silicon）。ローカルの git checkout は
+以前 `chore/ios-storekit-config` というブランチに乗っていたが、`claude/clock-learning-app-store-l1yaaa`
+にmergeして統合済み。**今後ローカルでコミットする際は、新しいブランチを切らずに
+`claude/clock-learning-app-store-l1yaaa` を直接使う**こと（`git checkout claude/clock-learning-app-store-l1yaaa && git pull`）。
+
+### 直近までに完了したこと
+- **C-1（Appレコード作成）**: 完了。App Store Connect上に「とけいがくしゅう」v1.0（提出準備中）
+- **C-2（サブスクリプション登録）**: 完了。詳細は本ファイルの C-2 セクション参照
+  - 月額 `clock_learning_premium_monthly` ¥480 / 年額 `clock_learning_premium_yearly` ¥4,800
+  - 両プランとも「審査準備完了」ステータス。価格・ローカリゼーション・審査用スクリーンショット設定済み
+  - 無料体験は使わない方針で確定（コード側 `paywall_screen.dart` の変更は不要）
+- **macOS環境のセットアップ**が完了し、iOSシミュレータで実際にアプリを起動 → ペアレンタルゲート →
+  ペイウォールまで到達し、月額・年額とも `queryProductDetails` で正しく取得できることを実機確認済み
+  （StoreKit連携自体は正常に動作している）
+- **A-2（署名設定）着手中・未完了**:
+  - Xcode で Team（`Yuta Hoshino` / Team ID `A5TL863KQZ`）をサインイン・選択し、
+    `DEVELOPMENT_TEAM = A5TL863KQZ` が `project.pbxproj` に反映済み（コミット済み）
+  - StoreKit.framework をリンク済み（コミット済み）
+  - **In-App Purchase capability を追加操作したが、`ios/Runner/Runner.entitlements` が
+    生成されておらず未コミット。**「Communication with Apple failed」
+    「Your team has no devices from which to generate a provisioning profile」という警告が
+    Signing & Capabilities 画面に出ており、これが原因でcapability追加が正常に反映されていない疑いがある
+
+### 次にやること（優先順）
+1. **A-2の続き**: Xcodeの Signing & Capabilities で「In-App Purchase」セクションがまだ表示されているか確認。
+   消えていたら再度「+ Capability」で追加し直す。「Try Again」でApple通信のリトライも試す。
+   `find . -iname "*.entitlements"` で `ios/Runner/Runner.entitlements` が生成されたら
+   `git add` してコミット・push
+2. 実機接続 or `flutter build ipa --release` でのアーカイブ時に、上記の署名警告が解消されるか確認
+3. D-3: リリースビルド（`flutter build ipa --release`）→ App Store Connect にアップロード
+4. D-4: Sandboxテスターで実機課金テスト（チェックリスト該当項目を1つずつ確認）
+5. C-3〜C-6: Appプライバシー回答・年齢レーティング・カテゴリ・審査メモの入力
+6. B-4: 銀行口座の検証完了を確認（Apple側、操作不要のはず）
+7. B-5/B-6: 本番用スクリーンショット（シミュレータのもので代用可）・アイコンのアルファチャンネル確認
+
+### 引き継ぎ時の心構え
+- Xcode・シミュレータ操作は実際にはユーザー（starfy）のMac上で行われる。ローカルセッションなら
+  Bashツールで直接コマンド実行やファイル確認ができるはずなので、リモート版よりスムーズに進められる
+- App Store Connect側の操作（ブラウザ）は代行できないため、スクリーンショットで確認しながら進める
+  運用は引き続き必要
+
+---
+
 ## A. リポジトリ内のコード / プロジェクト設定
 
 ### A-1. ✅ Bundle Identifier
@@ -38,15 +84,22 @@ macOS / Linux / Windows の各 runner 設定には `com.example` が残ってい
 `kSiteBaseUrl` を差し替える（例: `clock.starfy.tech` を GitHub Pages に CNAME で向ける）。
 Bundle ID とページの URL は一致している必要はないため、**急ぐ作業ではない**。
 
-### A-2. 🔴 署名設定（Team / Provisioning Profile）が未設定
+### A-2. 🟡 一部対応 — 署名設定（Team / Provisioning Profile）
 
-`project.pbxproj` に `DEVELOPMENT_TEAM` がなく、
-`CODE_SIGN_IDENTITY[sdk=iphoneos*] = "iPhone Developer"`（旧表記）のまま。
-Xcode がない環境では設定できないため、macOS 上で以下を行う:
+macOS + Xcode で以下まで完了:
 
-- Xcode → Runner target → Signing & Capabilities で Team を選択し、Automatically manage signing を有効化
-- Capability に **In-App Purchase** を追加（`Runner.entitlements` が新規生成される）
-- 生成された `ios/Runner/*.entitlements` をコミットする
+- Signing & Capabilities で Team（`Yuta Hoshino` / Team ID `A5TL863KQZ`）を選択し、
+  Automatically manage signing を有効化 → `project.pbxproj` に `DEVELOPMENT_TEAM = A5TL863KQZ` が反映済み
+- StoreKit.framework をリンク済み
+- Capability に **In-App Purchase** を追加操作済み
+
+残作業:
+- 🔴 **`ios/Runner/Runner.entitlements` がまだこのリポジトリにコミットされていない**。
+  ローカルで `ls ios/Runner/*.entitlements` を確認し、存在すれば `git add` してコミット・pushすること
+  （未追跡のままだとビルドはローカルで通っても、クリーンチェックアウトした環境や審査用ビルドで
+  In-App Purchase capability が反映されない可能性がある）
+- 実機未接続のため「No profiles for 'tech.starfy.clocklearning' were found」という警告が出るが、
+  シミュレータでの動作には影響しない。実機接続 or リリースアーカイブ時に解消される見込み
 
 ### A-3. ✅ プライバシーポリシー / 利用規約 URL
 
@@ -252,24 +305,36 @@ App Store Connect 側でも、以下に同じアドレス / URL を設定する:
 - Bundle ID: `tech.starfy.clocklearning`
 - SKU: 任意の管理用文字列
 
-### C-2. 🔴 サブスクリプションの登録
+### C-2. ✅ サブスクリプションの登録
 
-`lib/services/subscription_service.dart:7-8` の Product ID を**完全一致**で登録する:
+`lib/services/subscription_service.dart:7-8` の Product ID と完全一致で登録済み。
 
-| 定数 | Product ID | 種別 |
-|------|-----------|------|
-| `kMonthlySubId` | `clock_learning_premium_monthly` | 自動更新サブスクリプション（月） |
-| `kYearlySubId` | `clock_learning_premium_yearly` | 自動更新サブスクリプション（年） |
+| 定数 | Product ID | 種別 | 価格（日本） | ステータス |
+|------|-----------|------|------|------|
+| `kMonthlySubId` | `clock_learning_premium_monthly` | 自動更新サブスクリプション（月） | ¥480 | 審査準備完了 |
+| `kYearlySubId` | `clock_learning_premium_yearly` | 自動更新サブスクリプション（年） | ¥4,800 | 審査準備完了 |
 
-1. サブスクリプショングループを 1 つ作成し、両プランを同じグループに入れる（プラン変更のため）
-2. 各プランの表示名・説明を日本語で登録
-3. 価格の設定
-4. 無料体験（Introductory Offer）を使うかを決定 → 使う場合は A-8 の文言を戻す
-5. **審査用スクリーンショット**を各サブスクリプションにアップロード（未設定だと審査が始まらない）
-6. サブスクリプション自体を「審査に提出」— アプリ本体のビルドと同時に提出する
+- サブスクリプショングループ「プレミアムプラン」（グループID: `22312547`）に両プランを登録
+- グループ表示名（App Store のローカリゼーション）: 「とけいがくしゅう」（アプリ名を使用）
+- 各プランの表示名・説明（日本語）、価格（日本 ¥480 / ¥4,800、他174地域は自動換算）を設定済み
+- **無料体験（Introductory Offer）は使わない方針で確定** → A-8 の文言修正（無料体験の記述削除）はそのままで問題なし。コード変更不要
+- 各プランに審査用スクリーンショットをアップロード済み（iOSシミュレータ + StoreKitで実際にペイウォールを表示して撮影）
+- macOS実機でのシミュレータ動作確認により、月額・年額とも `queryProductDetails` で正しく取得できることを確認済み（`notFoundIDs` が空になることを確認）
+
+残作業:
+- サブスクリプション自体の「審査に提出」は、**アプリ本体のビルドと同時に行う**必要があるため（Apple仕様）、D-3のビルド提出時にまとめて行う
 
 > アプリ側は期間表示を自前で持つようにしたため（A-8）、
 > App Store Connect の登録名に「月額」等を含めなくても期間は正しく表示される。
+
+> 📌 macOS側のセットアップ手順（今回新たに判明した実務メモ）:
+> - `xcode-select -p` が `/Library/Developer/CommandLineTools` を指している場合、
+>   `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer` で切り替えてから
+>   `sudo xcodebuild -license accept` を実行する
+> - iOSシミュレータランタイムが未インストールの場合は `xcodebuild -downloadPlatform iOS`
+> - CocoaPods未インストールの場合は `brew install cocoapods`（Homebrewが無ければ `sudo gem install cocoapods`）
+> - 上記を済ませれば `cd ios && pod install --repo-update && cd .. && flutter run -d "<シミュレータ名>"` でシミュレータ起動可能
+> - シミュレータの Apple ID / ストア地域が日本以外だと、ペイウォールの価格は USD 等で表示される（バグではない。実機で日本のApple IDを使えば¥表示になる）
 
 ### C-3. 🔴 App プライバシー（Nutrition Label）の回答
 
