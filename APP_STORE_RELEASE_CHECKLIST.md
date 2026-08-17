@@ -38,15 +38,22 @@ macOS / Linux / Windows の各 runner 設定には `com.example` が残ってい
 `kSiteBaseUrl` を差し替える（例: `clock.starfy.tech` を GitHub Pages に CNAME で向ける）。
 Bundle ID とページの URL は一致している必要はないため、**急ぐ作業ではない**。
 
-### A-2. 🔴 署名設定（Team / Provisioning Profile）が未設定
+### A-2. 🟡 一部対応 — 署名設定（Team / Provisioning Profile）
 
-`project.pbxproj` に `DEVELOPMENT_TEAM` がなく、
-`CODE_SIGN_IDENTITY[sdk=iphoneos*] = "iPhone Developer"`（旧表記）のまま。
-Xcode がない環境では設定できないため、macOS 上で以下を行う:
+macOS + Xcode で以下まで完了:
 
-- Xcode → Runner target → Signing & Capabilities で Team を選択し、Automatically manage signing を有効化
-- Capability に **In-App Purchase** を追加（`Runner.entitlements` が新規生成される）
-- 生成された `ios/Runner/*.entitlements` をコミットする
+- Signing & Capabilities で Team（`Yuta Hoshino` / Team ID `A5TL863KQZ`）を選択し、
+  Automatically manage signing を有効化 → `project.pbxproj` に `DEVELOPMENT_TEAM = A5TL863KQZ` が反映済み
+- StoreKit.framework をリンク済み
+- Capability に **In-App Purchase** を追加操作済み
+
+残作業:
+- 🔴 **`ios/Runner/Runner.entitlements` がまだこのリポジトリにコミットされていない**。
+  ローカルで `ls ios/Runner/*.entitlements` を確認し、存在すれば `git add` してコミット・pushすること
+  （未追跡のままだとビルドはローカルで通っても、クリーンチェックアウトした環境や審査用ビルドで
+  In-App Purchase capability が反映されない可能性がある）
+- 実機未接続のため「No profiles for 'tech.starfy.clocklearning' were found」という警告が出るが、
+  シミュレータでの動作には影響しない。実機接続 or リリースアーカイブ時に解消される見込み
 
 ### A-3. ✅ プライバシーポリシー / 利用規約 URL
 
