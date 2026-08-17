@@ -44,3 +44,6 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 .claude/
+
+# App Store submission working files (screenshots, etc.)
+App申請用/
