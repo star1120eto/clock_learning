@@ -14,6 +14,52 @@ Apple Developer Program 登録完了時点（2026-07）での、iOS 版 App Stor
 
 ---
 
+## 🚩 現在のセッション状況（2026-08-18 時点・引き継ぎメモ）
+
+**作業ブランチ**: `claude/clock-learning-app-store-l1yaaa`（origin にpush済み、最新コミット `cedfb13`）
+**Xcode作業マシン**: `starfy@YutanoMac-mini`（macOS、Apple Silicon）。ローカルの git checkout は
+以前 `chore/ios-storekit-config` というブランチに乗っていたが、`claude/clock-learning-app-store-l1yaaa`
+にmergeして統合済み。**今後ローカルでコミットする際は、新しいブランチを切らずに
+`claude/clock-learning-app-store-l1yaaa` を直接使う**こと（`git checkout claude/clock-learning-app-store-l1yaaa && git pull`）。
+
+### 直近までに完了したこと
+- **C-1（Appレコード作成）**: 完了。App Store Connect上に「とけいがくしゅう」v1.0（提出準備中）
+- **C-2（サブスクリプション登録）**: 完了。詳細は本ファイルの C-2 セクション参照
+  - 月額 `clock_learning_premium_monthly` ¥480 / 年額 `clock_learning_premium_yearly` ¥4,800
+  - 両プランとも「審査準備完了」ステータス。価格・ローカリゼーション・審査用スクリーンショット設定済み
+  - 無料体験は使わない方針で確定（コード側 `paywall_screen.dart` の変更は不要）
+- **macOS環境のセットアップ**が完了し、iOSシミュレータで実際にアプリを起動 → ペアレンタルゲート →
+  ペイウォールまで到達し、月額・年額とも `queryProductDetails` で正しく取得できることを実機確認済み
+  （StoreKit連携自体は正常に動作している）
+- **A-2（署名設定）着手中・未完了**:
+  - Xcode で Team（`Yuta Hoshino` / Team ID `A5TL863KQZ`）をサインイン・選択し、
+    `DEVELOPMENT_TEAM = A5TL863KQZ` が `project.pbxproj` に反映済み（コミット済み）
+  - StoreKit.framework をリンク済み（コミット済み）
+  - **In-App Purchase capability を追加操作したが、`ios/Runner/Runner.entitlements` が
+    生成されておらず未コミット。**「Communication with Apple failed」
+    「Your team has no devices from which to generate a provisioning profile」という警告が
+    Signing & Capabilities 画面に出ており、これが原因でcapability追加が正常に反映されていない疑いがある
+
+### 次にやること（優先順）
+1. **A-2の続き**: Xcodeの Signing & Capabilities で「In-App Purchase」セクションがまだ表示されているか確認。
+   消えていたら再度「+ Capability」で追加し直す。「Try Again」でApple通信のリトライも試す。
+   `find . -iname "*.entitlements"` で `ios/Runner/Runner.entitlements` が生成されたら
+   `git add` してコミット・push
+2. 実機接続 or `flutter build ipa --release` でのアーカイブ時に、上記の署名警告が解消されるか確認
+3. D-3: リリースビルド（`flutter build ipa --release`）→ App Store Connect にアップロード
+4. D-4: Sandboxテスターで実機課金テスト（チェックリスト該当項目を1つずつ確認）
+5. C-3〜C-6: Appプライバシー回答・年齢レーティング・カテゴリ・審査メモの入力
+6. B-4: 銀行口座の検証完了を確認（Apple側、操作不要のはず）
+7. B-5/B-6: 本番用スクリーンショット（シミュレータのもので代用可）・アイコンのアルファチャンネル確認
+
+### 引き継ぎ時の心構え
+- Xcode・シミュレータ操作は実際にはユーザー（starfy）のMac上で行われる。ローカルセッションなら
+  Bashツールで直接コマンド実行やファイル確認ができるはずなので、リモート版よりスムーズに進められる
+- App Store Connect側の操作（ブラウザ）は代行できないため、スクリーンショットで確認しながら進める
+  運用は引き続き必要
+
+---
+
 ## A. リポジトリ内のコード / プロジェクト設定
 
 ### A-1. ✅ Bundle Identifier
