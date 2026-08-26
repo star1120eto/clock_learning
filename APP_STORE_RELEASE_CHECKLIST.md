@@ -14,49 +14,45 @@ Apple Developer Program 登録完了時点（2026-07）での、iOS 版 App Stor
 
 ---
 
-## 🚩 現在のセッション状況（2026-08-18 時点・引き継ぎメモ）
+## 🚩 現在の状況（2026-08-18 時点）
 
-**作業ブランチ**: `claude/clock-learning-app-store-l1yaaa`（origin にpush済み、最新コミット `cedfb13`）
-**Xcode作業マシン**: `starfy@YutanoMac-mini`（macOS、Apple Silicon）。ローカルの git checkout は
-以前 `chore/ios-storekit-config` というブランチに乗っていたが、`claude/clock-learning-app-store-l1yaaa`
-にmergeして統合済み。**今後ローカルでコミットする際は、新しいブランチを切らずに
-`claude/clock-learning-app-store-l1yaaa` を直接使う**こと（`git checkout claude/clock-learning-app-store-l1yaaa && git pull`）。
+> ### 📋 残作業はすべて GitHub Issue に起票済み → **#53（トラッキング Issue）** を参照
+>
+> 本ファイルは各項目の背景・調査結果を残すためのドキュメント。
+> **進捗管理は Issue 側で行う。** 各セクション見出しの直下に対応 Issue 番号を記載している。
 
-### 直近までに完了したこと
-- **C-1（Appレコード作成）**: 完了。App Store Connect上に「とけいがくしゅう」v1.0（提出準備中）
-- **C-2（サブスクリプション登録）**: 完了。詳細は本ファイルの C-2 セクション参照
-  - 月額 `clock_learning_premium_monthly` ¥480 / 年額 `clock_learning_premium_yearly` ¥4,800
-  - 両プランとも「審査準備完了」ステータス。価格・ローカリゼーション・審査用スクリーンショット設定済み
-  - 無料体験は使わない方針で確定（コード側 `paywall_screen.dart` の変更は不要）
-- **macOS環境のセットアップ**が完了し、iOSシミュレータで実際にアプリを起動 → ペアレンタルゲート →
-  ペイウォールまで到達し、月額・年額とも `queryProductDetails` で正しく取得できることを実機確認済み
-  （StoreKit連携自体は正常に動作している）
-- **A-2（署名設定）着手中・未完了**:
-  - Xcode で Team（`Yuta Hoshino` / Team ID `A5TL863KQZ`）をサインイン・選択し、
-    `DEVELOPMENT_TEAM = A5TL863KQZ` が `project.pbxproj` に反映済み（コミット済み）
-  - StoreKit.framework をリンク済み（コミット済み）
-  - **In-App Purchase capability を追加操作したが、`ios/Runner/Runner.entitlements` が
-    生成されておらず未コミット。**「Communication with Apple failed」
-    「Your team has no devices from which to generate a provisioning profile」という警告が
-    Signing & Capabilities 画面に出ており、これが原因でcapability追加が正常に反映されていない疑いがある
+**作業ブランチ**: `claude/clock-learning-app-store-l1yaaa`
+**Xcode 作業マシン**: `starfy@YutanoMac-mini`（macOS 26.5 / Xcode 26.6 / iOS 26.5 SDK）
 
-### 次にやること（優先順）
-1. **A-2の続き**: Xcodeの Signing & Capabilities で「In-App Purchase」セクションがまだ表示されているか確認。
-   消えていたら再度「+ Capability」で追加し直す。「Try Again」でApple通信のリトライも試す。
-   `find . -iname "*.entitlements"` で `ios/Runner/Runner.entitlements` が生成されたら
-   `git add` してコミット・push
-2. 実機接続 or `flutter build ipa --release` でのアーカイブ時に、上記の署名警告が解消されるか確認
-3. D-3: リリースビルド（`flutter build ipa --release`）→ App Store Connect にアップロード
-4. D-4: Sandboxテスターで実機課金テスト（チェックリスト該当項目を1つずつ確認）
-5. C-3〜C-6: Appプライバシー回答・年齢レーティング・カテゴリ・審査メモの入力
-6. B-4: 銀行口座の検証完了を確認（Apple側、操作不要のはず）
-7. B-5/B-6: 本番用スクリーンショット（シミュレータのもので代用可）・アイコンのアルファチャンネル確認
+> ⚠️ ローカルでコミットする際は新しいブランチを切らず、
+> `claude/clock-learning-app-store-l1yaaa` を直接使うこと。
+> （`git checkout claude/clock-learning-app-store-l1yaaa && git pull`）
 
-### 引き継ぎ時の心構え
-- Xcode・シミュレータ操作は実際にはユーザー（starfy）のMac上で行われる。ローカルセッションなら
-  Bashツールで直接コマンド実行やファイル確認ができるはずなので、リモート版よりスムーズに進められる
-- App Store Connect側の操作（ブラウザ）は代行できないため、スクリーンショットで確認しながら進める
-  運用は引き続き必要
+### 直近で完了したこと
+
+- **C-1（App レコード作成）**: App Store Connect 上に「とけいがくしゅう」v1.0（提出準備中）
+- **C-2（サブスクリプション登録）**: 月額 ¥480 / 年額 ¥4,800 とも「審査準備完了」。
+  価格・ローカリゼーション・審査用スクリーンショットをすべて設定済み
+- **macOS 環境構築**: Xcode ライセンス同意 → iOS シミュレータランタイム導入 → CocoaPods 導入まで完了。
+  シミュレータで実際にアプリを起動し、ペアレンタルゲート → ペイウォールまで到達。
+  月額・年額とも `queryProductDetails` で取得できることを確認済み
+- **A-2（署名設定）**: Team（`A5TL863KQZ`）選択・StoreKit.framework リンク・
+  In-App Purchase capability 追加まで完了（`project.pbxproj` にコミット済み）
+
+### 次にやること
+
+**#53 の「推奨する着手順序」を参照。** 先に着手すべきものだけ挙げると:
+
+1. **#36 有料 App 契約** — Apple 側の処理待ちで日数がかかるため最優先で状況確認
+2. **#47 法務 URL の到達確認** — ブラウザで開くだけ、すぐ終わる
+3. **#45 iPad 対応の可否** — #37 のスクリーンショット作業量が変わるので先に決める
+
+### 引き継ぎ時のメモ
+
+- Xcode・シミュレータ操作はユーザー（starfy）の Mac 上で行われる。
+  ローカルセッションなら Bash ツールで直接コマンド実行・ファイル確認ができる
+- App Store Connect（ブラウザ）の操作は代行できないため、
+  画面のスクリーンショットを貼ってもらいながら進める運用が必要
 
 ---
 
@@ -86,20 +82,27 @@ Bundle ID とページの URL は一致している必要はないため、**急
 
 ### A-2. 🟡 一部対応 — 署名設定（Team / Provisioning Profile）
 
+> 📋 Issue: #35
+
 macOS + Xcode で以下まで完了:
 
 - Signing & Capabilities で Team（`Yuta Hoshino` / Team ID `A5TL863KQZ`）を選択し、
   Automatically manage signing を有効化 → `project.pbxproj` に `DEVELOPMENT_TEAM = A5TL863KQZ` が反映済み
 - StoreKit.framework をリンク済み
-- Capability に **In-App Purchase** を追加操作済み
+- Capability に **In-App Purchase** を追加済み
+
+> ⚠️ **訂正**: 本ファイルの旧版には「In-App Purchase を追加すると `Runner.entitlements` が
+> 新規生成されるのでコミットする」と書かれていたが、**これは誤り**。
+> In-App Purchase は Push Notifications や App Groups と異なり **entitlement キーを持たない**。
+> capability は App ID（developer.apple.com）側で有効化されるだけで、Xcode は
+> entitlements ファイルを生成しない。iOS 側に entitlements が存在しないのは正常な状態。
 
 残作業:
-- 🔴 **`ios/Runner/Runner.entitlements` がまだこのリポジトリにコミットされていない**。
-  ローカルで `ls ios/Runner/*.entitlements` を確認し、存在すれば `git add` してコミット・pushすること
-  （未追跡のままだとビルドはローカルで通っても、クリーンチェックアウトした環境や審査用ビルドで
-  In-App Purchase capability が反映されない可能性がある）
-- 実機未接続のため「No profiles for 'tech.starfy.clocklearning' were found」という警告が出るが、
-  シミュレータでの動作には影響しない。実機接続 or リリースアーカイブ時に解消される見込み
+- 実機未登録のため「Communication with Apple failed」「No profiles for
+  'tech.starfy.clocklearning' were found」という警告が出る。これは **Development** プロファイル
+  生成用の実機がチームに未登録なのが原因で、シミュレータ実行には影響しない。
+  App Store 配布は Distribution プロファイルを使うためアーカイブは通る見込み
+- `flutter build ipa --release` が署名エラーなく通ることを実際に確認する（#35）
 
 ### A-3. ✅ プライバシーポリシー / 利用規約 URL
 
@@ -141,6 +144,8 @@ Runner グループと Copy Bundle Resources に登録済み。
   `lib/main.dart` の `setPreferredOrientations` と整合させた
 
 ### A-6. 🟡 iPad 対応の扱いを決める
+
+> 📋 Issue: #45
 
 `TARGETED_DEVICE_FAMILY = "1,2"`（iPhone + iPad）のまま**変更していない**。
 維持する場合は **13インチ iPad のスクリーンショットが必須**で、
@@ -189,6 +194,8 @@ iPad 実機/シミュレータでのレイアウト確認も必要。
 
 ### A-9. 🟡 一部対応 — レシート検証がローカルのみ
 
+> 📋 Issue: #50
+
 `lib/services/subscription_service.dart` は購入イベントを受けて
 `SharedPreferences` に `is_premium` を保存するだけで、レシート検証を行っていない。
 
@@ -207,6 +214,8 @@ iPad 実機/シミュレータでのレイアウト確認も必要。
 
 ### A-10. 🟢 音声アセットが空（未対応）
 
+> 📋 Issue: #46
+
 `assets/audio/` は `.gitkeep` のみで、`audio_service.dart` が参照する
 `audio/correct.ogg` 等が存在しない。`try/catch` で握り潰しているためクラッシュはしないが、
 **設定画面に「おとをならす」トグルがあるのに音が一切鳴らない**。
@@ -220,6 +229,8 @@ iPad 実機/シミュレータでのレイアウト確認も必要。
 `lottie` 依存を削除するとバイナリサイズが減る。
 
 ### A-11. 🟢 起動画面が Flutter デフォルト（未対応）
+
+> 📋 Issue: #51
 
 `ios/Runner/Assets.xcassets/LaunchImage.imageset/` はテンプレートのまま。
 画像素材が必要なため未対応。
@@ -261,6 +272,8 @@ App Store Connect 側でも、以下に同じアドレス / URL を設定する:
 
 ### B-4. 🟡 進行中 — 有料 App 契約（Paid Applications Agreement）
 
+> 📋 Issue: #36
+
 課金アイテムを審査に出すには、この契約が「有効」になっている必要がある。
 2026年8月4日時点の状況:
 
@@ -280,6 +293,8 @@ App Store Connect 側でも、以下に同じアドレス / URL を設定する:
 
 ### B-5. 🔴 スクリーンショット
 
+> 📋 Issue: #37
+
 | デバイス | 必要枚数 |
 |---------|---------|
 | iPhone 6.9インチ（またはApple指定の最新必須サイズ） | 最低 1、推奨 3〜5 |
@@ -287,11 +302,16 @@ App Store Connect 側でも、以下に同じアドレス / URL を設定する:
 
 ホーム / レベル選択 / 時計操作 / 結果・バッジ / ペイウォール あたりが候補。
 
-### B-6. 🟡 App アイコン 1024×1024
+### B-6. ✅ App アイコン 1024×1024
 
-`ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024@1x.png` は
-`flutter_launcher_icons` により生成済み。**アルファチャンネルが含まれていると提出時に弾かれる**ため、
-不透明であることを確認する。
+`ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024@1x.png` を検査し、
+**アルファチャンネルを含まないこと（PNG colortype=2 / RGB、tRNS チャンクなし）を確認済み**。
+提出時に弾かれる心配はない。
+
+```console
+$ python3 -c "import struct; d=open('ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024@1x.png','rb').read(33); print(struct.unpack('>II',d[16:24]), 'colortype=', d[25])"
+(1024, 1024) colortype= 2
+```
 
 ---
 
@@ -338,19 +358,27 @@ App Store Connect 側でも、以下に同じアドレス / URL を設定する:
 
 ### C-3. 🔴 App プライバシー（Nutrition Label）の回答
 
+> 📋 Issue: #38
+
 外部サーバー送信なし、解析 SDK なし → **「データを収集していません」** で回答する。
 `PrivacyInfo.xcprivacy`（A-4）および `web/privacy.html`（B-1）と矛盾させないこと。
 
 ### C-4. 🔴 年齢別レーティングの回答
 
+> 📋 Issue: #39
+
 暴力・成人向け要素なし → 4+ の想定。**「App 内課金あり」のチェックを忘れずに**。
 
 ### C-5. 🟡 カテゴリ
+
+> 📋 Issue: #48
 
 - プライマリ: 教育（Education）
 - キッズカテゴリは選択しない（決定済み）。ペアレンタルゲートは実装済み（A-7）
 
 ### C-6. 🟡 審査メモ（App Review Information）
+
+> 📋 Issue: #44
 
 以下を必ず記載する:
 
@@ -361,6 +389,8 @@ App Store Connect 側でも、以下に同じアドレス / URL を設定する:
 - 端末内にのみデータを保存し、外部通信は課金処理のみである旨
 
 ### C-7. 🟢 その他の申告
+
+> 📋 Issue: #48
 
 - 輸出コンプライアンス: 暗号化の使用なし（A-5 で Info.plist に記載済み）
 - アカウント削除要件: アカウント登録機能が無いため **対象外**
@@ -382,6 +412,8 @@ iOS ビルドには macOS 実機が必須。App Store は**最新の Xcode SDK �
 
 ### D-3. リリースビルド手順
 
+> 📋 Issue: #41
+
 ```bash
 flutter clean
 flutter pub get
@@ -392,6 +424,8 @@ flutter build ipa --release
 生成物 `build/ios/ipa/*.ipa` を Xcode Organizer / Transporter でアップロード。
 
 ### D-4. 🔴 Sandbox 環境での課金テスト
+
+> 📋 Issue: #42
 
 App Store Connect → ユーザーとアクセス → Sandbox テスターを作成し、実機で確認する:
 
@@ -408,6 +442,8 @@ App Store Connect → ユーザーとアクセス → Sandbox テスターを作
 > **確実にリジェクト**される。C-2 の登録完了後、必ず実機で確認すること。
 
 ### D-5. 🟡 TestFlight での動作確認
+
+> 📋 Issue: #49
 
 内部テスターで 1 ラウンド確認してから審査提出するのが安全。
 
