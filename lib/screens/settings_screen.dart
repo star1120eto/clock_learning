@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:clock_learning/constants/feature_flags.dart';
 import 'package:clock_learning/constants/legal_urls.dart';
 import 'package:clock_learning/services/subscription_service.dart';
 import 'package:clock_learning/services/audio_service.dart';
@@ -23,7 +24,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void initState() {
     super.initState();
-    _loadAudioSettings();
+    if (kAudioFeatureEnabled) {
+      _loadAudioSettings();
+    }
   }
 
   Future<void> _loadAudioSettings() async {
@@ -47,22 +50,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: ListView(
         children: [
           // ── おと ──────────────────────────────
-          _SectionHeader(label: 'おと'),
-          SwitchListTile(
-            secondary: Icon(
-              _isMuted ? Icons.volume_off : Icons.volume_up,
-              color: Theme.of(context).colorScheme.primary,
+          // assets/audio/ に音源が未配置のため既定では非表示（#46）。
+          // 音源を配置したら constants/feature_flags.dart の
+          // kAudioFeatureEnabled の既定値を true にすると復活する。
+          if (kAudioFeatureEnabled) ...[
+            _SectionHeader(label: 'おと'),
+            SwitchListTile(
+              secondary: Icon(
+                _isMuted ? Icons.volume_off : Icons.volume_up,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              title: const Text('おとをならす', style: TextStyle(fontSize: 18)),
+              value: !_isMuted,
+              onChanged: _audioService == null
+                  ? null
+                  : (value) async {
+                      await _audioService!.setMuted(!value);
+                      setState(() => _isMuted = !value);
+                    },
             ),
-            title: const Text('おとをならす', style: TextStyle(fontSize: 18)),
-            value: !_isMuted,
-            onChanged: _audioService == null
-                ? null
-                : (value) async {
-                    await _audioService!.setMuted(!value);
-                    setState(() => _isMuted = !value);
-                  },
-          ),
-          const Divider(height: 1),
+            const Divider(height: 1),
+          ],
 
           // ── プレミアム ────────────────────────
           _SectionHeader(label: 'プレミアム'),
