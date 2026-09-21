@@ -147,14 +147,23 @@ Runner グループと Copy Bundle Resources に登録済み。
 - `UISupportedInterfaceOrientations`（iPhone / iPad とも）を縦向きのみに変更し、
   `lib/main.dart` の `setPreferredOrientations` と整合させた
 
-### A-6. 🟡 iPad 対応の扱いを決める
+### A-6. ✅ iPad 対応は見送り（iPhone のみ）
 
-> 📋 Issue: #45
+> 📋 Issue: #45（クローズ済み）
 
-`TARGETED_DEVICE_FAMILY = "1,2"`（iPhone + iPad）のまま**変更していない**。
-維持する場合は **13インチ iPad のスクリーンショットが必須**で、
-iPad 実機/シミュレータでのレイアウト確認も必要。
-初回リリースを軽くするなら `1`（iPhone のみ）に変更する。
+初回リリースを軽くするため、**iPad 対応は公開後に先送り**する方針に従い、
+`ios/Runner.xcodeproj/project.pbxproj` の `TARGETED_DEVICE_FAMILY` を
+Debug / Release / Profile の 3 箇所とも `"1,2"` → **`"1"`（iPhone のみ）** に変更した。
+
+これにより:
+- 13インチ iPad のスクリーンショットが**不要**になった（#37 の作業量が減る）
+- iPad でのレイアウト確認も不要
+
+> 📌 `Info.plist` の `UISupportedInterfaceOrientations~ipad` は、将来 iPad 対応を
+> 戻す場合に備えてそのまま残している（iPhone のみの現状では参照されない）。
+
+> ⚠️ **公開後に iPad 対応を追加するのは容易だが、公開後に外すのは既存ユーザーに
+> 影響するため難しい。** 初回リリースで絞っておくのは安全側の判断。
 
 ### A-7. ✅ ペアレンタルゲート（保護者確認）
 
@@ -216,21 +225,30 @@ iPad 実機/シミュレータでのレイアウト確認も必要。
 正確な有効期限判定にはサーバー側レシート検証 / StoreKit 2 への移行が必要。
 審査は現状でも通るため、初回リリース後の課題とする。
 
-### A-10. 🟢 音声アセットが空（未対応）
+### A-10. ✅ 音声トグルを非表示化（音源は未配置のまま）
 
-> 📋 Issue: #46
+> 📋 Issue: #46（クローズ済み）
 
-`assets/audio/` は `.gitkeep` のみで、`audio_service.dart` が参照する
-`audio/correct.ogg` 等が存在しない。`try/catch` で握り潰しているためクラッシュはしないが、
-**設定画面に「おとをならす」トグルがあるのに音が一切鳴らない**。
-機能が動作しないことをリジェクト理由にされ得る（Guideline 2.1）。
+`assets/audio/` は `.gitkeep` のみで `audio_service.dart` が参照する
+`audio/correct.ogg` 等が存在せず、**設定画面に「おとをならす」トグルがあるのに
+音が一切鳴らない**状態だった（Guideline 2.1 App Completeness のリジェクト要因）。
 
-音源そのものは自動生成できないため未対応。以下のいずれかを選ぶ:
-1. 効果音（正解 / 不正解 / バッジ獲得）を用意して `assets/audio/` に配置する
-2. 音源が用意できるまで、設定画面の音声トグルを非表示にする
+音源が用意できないため、**トグルを UI から隠す**方針で対応した:
 
-`assets/animations/` も空。Lottie を使わないなら `pubspec.yaml` から
-`lottie` 依存を削除するとバイナリサイズが減る。
+| 変更 | 内容 |
+|------|------|
+| `lib/constants/feature_flags.dart`（新規） | `kAudioFeatureEnabled` を定義。`bool.fromEnvironment('ENABLE_AUDIO')` なので既定は `false` |
+| `lib/screens/settings_screen.dart` | 「おと」セクションをフラグでガード。無効時は `AudioService` の生成自体も行わない |
+| `web/support.html` | FAQ「音が鳴りません」が存在しないトグルを案内していたため、効果音未対応である旨に書き換え |
+
+`bool.fromEnvironment` 方式にしたことで:
+- コードを書き換えずに `flutter run --dart-define=ENABLE_AUDIO=true` で一時確認できる
+- `const false` と違い、アナライザの `dead_code` 警告が出ない
+
+**音源を配置したら `kAudioFeatureEnabled` の既定値を `true` にするだけで復活する。**
+
+> 📌 `assets/animations/` も空のまま。Lottie を使わないなら `pubspec.yaml` から
+> `lottie` 依存を削除するとバイナリサイズが減る（#52）。
 
 ### A-11. 🟢 起動画面が Flutter デフォルト（未対応）
 
