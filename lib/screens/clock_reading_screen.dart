@@ -1,8 +1,8 @@
-import 'dart:math';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:clock_learning/models/level.dart';
 import 'package:clock_learning/screens/result_screen.dart';
-import 'package:clock_learning/widgets/clock_widget.dart';
+import 'package:clock_learning/widgets/responsive_clock.dart';
 import 'package:clock_learning/widgets/clock_controller.dart';
 import 'package:clock_learning/services/audio_service.dart';
 import 'package:clock_learning/services/progress_service.dart';
@@ -60,7 +60,7 @@ class _ClockReadingScreenState extends State<ClockReadingScreen> {
   }
 
   void _nextQuestion() {
-    final r = Random();
+    final r = math.Random();
     int newHour;
     int newMinute;
     int attempts = 0;
@@ -212,104 +212,164 @@ class _ClockReadingScreenState extends State<ClockReadingScreen> {
         title: Text('よみとり - ${widget.level.displayName}'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // 縦幅が狭い端末では余白と文字を詰めて、すべての要素が画面に収まるようにする
+            final compact = constraints.maxHeight < 640;
+            final gap = compact ? 6.0 : 12.0;
+
+            return Column(
               children: [
-                Text('$_questionCount / $maxQuestions もん',
-                    style: const TextStyle(fontSize: 18, color: Colors.grey)),
-              ],
-            ),
-          ),
-          const Text('なんじなんぷん？', style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 16),
-          Center(
-            child: ClockWidget(
-              controller: _clockController,
-              level: widget.level,
-              size: 250,
-              displayCorrectTime: true,
-              correctHour: _targetHour,
-              correctMinute: _targetMinute,
-            ),
-          ),
-          const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              GestureDetector(
-                onTap: _isChecked ? null : () => setState(() => _activeField = _InputField.hour),
-                child: _inputBox(
-                  _hourInput,
-                  'じ',
-                  isWrong: _lastResult == false,
-                  isActive: !_isChecked && _activeField == _InputField.hour,
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: compact ? 2 : 8,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text(
+                        '$_questionCount / $maxQuestions もん',
+                        style: TextStyle(
+                          fontSize: compact ? 15 : 18,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              if (showMinute) ...[
-                const SizedBox(width: 8),
-                GestureDetector(
-                  onTap: _isChecked ? null : () => setState(() => _activeField = _InputField.minute),
-                  child: _inputBox(
-                    _minuteInput,
-                    'ふん',
-                    isWrong: _lastResult == false,
-                    isActive: !_isChecked && _activeField == _InputField.minute,
+                Text(
+                  'なんじなんぷん？',
+                  style: TextStyle(
+                    fontSize: compact ? 20 : 26,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: gap),
+                // 時計は残りの縦幅に合わせて伸縮する
+                Expanded(
+                  flex: 5,
+                  child: ResponsiveClock(
+                    controller: _clockController,
+                    level: widget.level,
+                    maxSize: 250,
+                    minSize: 110,
+                    displayCorrectTime: true,
+                    correctHour: _targetHour,
+                    correctMinute: _targetMinute,
+                  ),
+                ),
+                SizedBox(height: gap),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    GestureDetector(
+                      onTap: _isChecked
+                          ? null
+                          : () => setState(() => _activeField = _InputField.hour),
+                      child: _inputBox(
+                        _hourInput,
+                        'じ',
+                        isWrong: _lastResult == false,
+                        isActive: !_isChecked && _activeField == _InputField.hour,
+                        compact: compact,
+                      ),
+                    ),
+                    if (showMinute) ...[
+                      const SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: _isChecked
+                            ? null
+                            : () =>
+                                setState(() => _activeField = _InputField.minute),
+                        child: _inputBox(
+                          _minuteInput,
+                          'ふん',
+                          isWrong: _lastResult == false,
+                          isActive:
+                              !_isChecked && _activeField == _InputField.minute,
+                          compact: compact,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                if (_lastResult != null)
+                  Padding(
+                    padding: EdgeInsets.all(compact ? 4 : 8),
+                    child: Text(
+                      _lastResult!
+                          ? 'せいかい！'
+                          : 'まちがい… こたえは $_targetHour じ${showMinute ? " $_targetMinute ふん" : ""}',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: compact ? 17 : 22,
+                        fontWeight: FontWeight.bold,
+                        color: _lastResult! ? Colors.green : Colors.red,
+                      ),
+                    ),
+                  ),
+                SizedBox(height: gap),
+                // テンキーも残りの縦幅に合わせて伸縮する
+                Expanded(
+                  flex: 5,
+                  child: _buildNumpad(compact),
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: compact ? 4 : 8,
+                  ),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: compact ? 52 : 64,
+                    child: _isChecked && _lastResult == false
+                        ? ElevatedButton(
+                            onPressed: _goNext,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                            child: Text(
+                              'つぎのもんだい',
+                              style: TextStyle(fontSize: compact ? 18 : 20),
+                            ),
+                          )
+                        : ElevatedButton(
+                            onPressed: _isChecked ? null : _checkAnswer,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                            child: Text(
+                              'こたえる',
+                              style: TextStyle(fontSize: compact ? 18 : 20),
+                            ),
+                          ),
                   ),
                 ),
               ],
-            ],
-          ),
-          if (_lastResult != null)
-            Padding(
-              padding: const EdgeInsets.all(8),
-              child: Text(
-                _lastResult! ? 'せいかい！' : 'まちがい… こたえは $_targetHour じ${showMinute ? " $_targetMinute ふん" : ""}',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: _lastResult! ? Colors.green : Colors.red,
-                ),
-              ),
-            ),
-          const Spacer(),
-          _buildNumpad(),
-          const SizedBox(height: 16),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 8),
-            child: SizedBox(
-              width: double.infinity,
-              height: 64,
-              child: _isChecked && _lastResult == false
-                  ? ElevatedButton(
-                      onPressed: _goNext,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      ),
-                      child: const Text('つぎのもんだい', style: TextStyle(fontSize: 20)),
-                    )
-                  : ElevatedButton(
-                      onPressed: _isChecked ? null : _checkAnswer,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      ),
-                      child: const Text('こたえる', style: TextStyle(fontSize: 20)),
-                    ),
-            ),
-          ),
-        ],
+            );
+          },
+        ),
       ),
     );
   }
 
-  Widget _inputBox(String value, String unit, {bool isWrong = false, bool isActive = false}) {
+  Widget _inputBox(
+    String value,
+    String unit, {
+    bool isWrong = false,
+    bool isActive = false,
+    bool compact = false,
+  }) {
     final Color borderColor;
     final double borderWidth;
     if (isWrong) {
@@ -327,8 +387,8 @@ class _ClockReadingScreenState extends State<ClockReadingScreen> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 72,
-          height: 56,
+          width: compact ? 62 : 72,
+          height: compact ? 46 : 56,
           alignment: Alignment.center,
           decoration: BoxDecoration(
             border: Border.all(color: borderColor, width: borderWidth),
@@ -337,59 +397,104 @@ class _ClockReadingScreenState extends State<ClockReadingScreen> {
           ),
           child: Text(
             value,
-            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: compact ? 24 : 28,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
         const SizedBox(width: 4),
-        Text(unit, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+        Text(
+          unit,
+          style: TextStyle(
+            fontSize: compact ? 19 : 22,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildNumpad() {
+  /// テンキー。与えられた領域にちょうど収まるようボタンの縦横比を計算する。
+  Widget _buildNumpad(bool compact) {
     final keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '⌫', '0', '✓'];
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
-      child: GridView.count(
-        crossAxisCount: 3,
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        childAspectRatio: 2,
-        mainAxisSpacing: 8,
-        crossAxisSpacing: 8,
-        children: keys.map((k) {
-          if (k == '✓') {
-            return ElevatedButton(
-              onPressed: _isChecked ? null : _checkAnswer,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              ),
-              child: const Text('✓', style: TextStyle(fontSize: 24)),
-            );
-          } else if (k == '⌫') {
-            return ElevatedButton(
-              onPressed: _onDelete,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red[100],
-                foregroundColor: Colors.red,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              ),
-              child: const Text('⌫', style: TextStyle(fontSize: 24)),
-            );
-          }
-          return ElevatedButton(
-            onPressed: () => _onNumberTap(k),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue[50],
-              foregroundColor: Colors.black87,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+    const spacing = 8.0;
+    const columns = 3;
+    const rows = 4;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // 横幅の広い端末でテンキーが間延びしないよう上限を設ける
+        final width = math.min(constraints.maxWidth - 64, 360.0);
+        final cellWidth = (width - spacing * (columns - 1)) / columns;
+        final availableHeight = constraints.maxHeight;
+        final cellHeight = (availableHeight - spacing * (rows - 1)) / rows;
+        // 高さが取れない場合に備えて既定の縦横比にフォールバックする
+        final aspectRatio =
+            cellHeight > 0 ? math.max(cellWidth / cellHeight, 1.1) : 2.0;
+        final fontSize = compact ? 20.0 : 24.0;
+
+        return Center(
+          child: SizedBox(
+            width: width,
+            child: GridView.count(
+              crossAxisCount: columns,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              childAspectRatio: aspectRatio,
+              mainAxisSpacing: spacing,
+              crossAxisSpacing: spacing,
+              children: keys.map((k) {
+                if (k == '✓') {
+                  return ElevatedButton(
+                    onPressed: _isChecked ? null : _checkAnswer,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.zero,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Text('✓', style: TextStyle(fontSize: fontSize)),
+                  );
+                } else if (k == '⌫') {
+                  return ElevatedButton(
+                    onPressed: _onDelete,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red[100],
+                      foregroundColor: Colors.red,
+                      padding: EdgeInsets.zero,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: Text('⌫', style: TextStyle(fontSize: fontSize)),
+                  );
+                }
+                return ElevatedButton(
+                  onPressed: () => _onNumberTap(k),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue[50],
+                    foregroundColor: Colors.black87,
+                    padding: EdgeInsets.zero,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Text(
+                    k,
+                    style: TextStyle(
+                      fontSize: fontSize,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                );
+              }).toList(),
             ),
-            child: Text(k, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-          );
-        }).toList(),
-      ),
+          ),
+        );
+      },
     );
   }
 }
