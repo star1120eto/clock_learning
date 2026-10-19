@@ -265,8 +265,20 @@ Debug / Release / Profile の 3 箇所とも `"1,2"` → **`"1"`（iPhone のみ
 
 ### A-13. 🟢 バージョン番号
 
-`pubspec.yaml`: `version: 1.1.0+2`。初回提出時に build number が重複しないよう、
-再提出のたびに `+N` をインクリメントする。
+`pubspec.yaml`: **`version: 1.0.0+1`**。
+
+> ⚠️ 以前は `1.1.0+2` になっており、**App Store Connect に作成した
+> バージョン「1.0」と不一致**だった。この状態でビルドすると IPA の
+> `CFBundleShortVersionString` が `1.1.0` になり、ASC の 1.0 バージョンに
+> ビルドを紐づけられない。初回リリースに合わせて `1.0.0+1` に修正済み。
+> ASC 側のバージョン番号も `1.0.0` に揃えること。
+
+再提出のたびに build number（`+N`）をインクリメントする。同じ番号のビルドは
+二度アップロードできない。
+
+`lib/screens/settings_screen.dart` の「アプリじょうほう」セクションに
+バージョンを**ハードコード**しているため、`pubspec.yaml` を変更したら
+そちらも必ず合わせること（`package_info_plus` は未導入）。
 
 ---
 
