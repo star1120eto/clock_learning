@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:clock_learning/screens/level_select_screen.dart';
@@ -208,19 +207,17 @@ class _MascotSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // マスコットを左、吹き出しを右に並べる。
+    // Stack で重ねると、Stack のサイズがマスコット（110px）基準になるため
+    // 最大 160px の吹き出しがマスコットに覆いかぶさってしまう。
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Stack(
-        clipBehavior: Clip.none,
-        alignment: Alignment.center,
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const ClockMascotWidget(size: 110),
-          // 吹き出し（右上）
-          Positioned(
-            right: 20,
-            top: 0,
-            child: _SpeechBubble(text: message),
-          ),
+          const SizedBox(width: 12),
+          Flexible(child: _SpeechBubble(text: message)),
         ],
       ),
     );
@@ -261,13 +258,16 @@ class _SpeechBubble extends StatelessWidget {
               ),
             ),
           ),
-          // しっぽ
+          // しっぽ（左辺の上下中央＝左隣のマスコットを指す）
           Positioned(
-            bottom: 8,
             left: -8,
-            child: CustomPaint(
-              size: const Size(12, 10),
-              painter: _BubbleTailPainter(),
+            top: 0,
+            bottom: 0,
+            child: Center(
+              child: CustomPaint(
+                size: const Size(12, 10),
+                painter: _BubbleTailPainter(),
+              ),
             ),
           ),
         ],
