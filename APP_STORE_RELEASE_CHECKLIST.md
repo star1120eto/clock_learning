@@ -265,7 +265,7 @@ Debug / Release / Profile の 3 箇所とも `"1,2"` → **`"1"`（iPhone のみ
 
 ### A-13. 🟢 バージョン番号
 
-`pubspec.yaml`: **`version: 1.0.0+1`**。
+`pubspec.yaml`: **`version: 1.0.0+2`**。
 
 > ⚠️ 以前は `1.1.0+2` になっており、**App Store Connect に作成した
 > バージョン「1.0」と不一致**だった。この状態でビルドすると IPA の
@@ -275,6 +275,9 @@ Debug / Release / Profile の 3 箇所とも `"1,2"` → **`"1"`（iPhone のみ
 
 再提出のたびに build number（`+N`）をインクリメントする。同じ番号のビルドは
 二度アップロードできない。
+
+> 📌 `1.0.0+1` は 2026-10-20 に App Store Connect へアップロード済み（デリバリ成功）。
+> その後 deployment target を iOS 15 に引き上げたため、作り直したビルドは `+2` とした。
 
 `lib/screens/settings_screen.dart` の「アプリじょうほう」セクションに
 バージョンを**ハードコード**しているため、`pubspec.yaml` を変更したら
@@ -445,8 +448,23 @@ iOS ビルドには macOS 実機が必須。App Store は**最新の Xcode SDK �
 
 ### D-2. ✅ Podfile のプラットフォーム指定
 
-`ios/Podfile` の `platform :ios, '13.0'` を有効化し、
-`IPHONEOS_DEPLOYMENT_TARGET = 13.0` と揃えた。
+`ios/Podfile` の `platform :ios, '15.0'` と
+`IPHONEOS_DEPLOYMENT_TARGET = 15.0`（3構成）を揃えている。
+
+> 📌 当初は 13.0 だったが、初回アップロード時に Transporter が次の警告を出したため
+> **リリース前に 15.0 へ引き上げた**:
+>
+> ```
+> Deployment target too low. Your app targets iOS 13.0. Starting in April 2027,
+> iOS apps must target iOS 15.0 or later to be uploaded to App Store Connect
+> or submitted for distribution. (90068)
+> ```
+>
+> 2027年4月以降はアップデート提出に必須となる。**リリース後に引き上げると
+> iOS 13/14 の既存ユーザーを切り捨てることになる**が、リリース前なら無痛。
+> 影響を受けるのは iPhone 6 / 6 Plus / 5s など 2013〜2014年の機種のみ
+> （iOS 15 は iPhone 6s 以降で動作）。
+> 副次効果として、iOS 15 以上を要求する StoreKit 2 への移行（A-9 / #50）も可能になった。
 
 ### D-3. リリースビルド手順
 
