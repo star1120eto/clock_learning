@@ -152,11 +152,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           // ── アプリ情報 ─────────────────────────
           _SectionHeader(label: 'アプリじょうほう'),
+          // ⚠️ バージョンはハードコードしているため、pubspec.yaml の `version:` を
+          // 変更したらここも必ず合わせること（package_info_plus 未導入のため自動化されていない）。
           const ListTile(
             leading: Icon(Icons.info_outline),
             title: Text('バージョン', style: TextStyle(fontSize: 16)),
             trailing: Text(
-              '1.1.0',
+              '1.0.0',
               style: TextStyle(color: Colors.grey, fontSize: 15),
             ),
           ),
