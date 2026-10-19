@@ -259,11 +259,11 @@ class PaywallScreen extends StatelessWidget {
   }
 
   /// 年額プランの「1か月あたり」相当額。「おとく！」表示の根拠として併記する。
-  static String? _perMonthLabel(ProductDetails yearly) {
-    if (yearly.rawPrice <= 0) return null;
-    final perMonth = (yearly.rawPrice / 12).round();
-    return '1か月あたり ${yearly.currencySymbol}$perMonth 相当';
-  }
+  static String? _perMonthLabel(ProductDetails yearly) => perMonthLabelFor(
+        rawPrice: yearly.rawPrice,
+        currencySymbol: yearly.currencySymbol,
+        formattedPrice: yearly.price,
+      );
 
   Widget _buildStoreUnavailableMessage() {
     return Container(
@@ -551,4 +551,34 @@ class DebugPremiumToggle extends StatelessWidget {
       ),
     );
   }
+}
+
+/// 年額価格から「1か月あたり ◯◯ 相当」の文字列を組み立てる。
+///
+/// 小数の桁数は、ストアが返す整形済み価格 [formattedPrice]（例: `¥4,800` /
+/// `$29.99`）の末尾の小数部に合わせる。通貨ごとに小数の有無が異なるため:
+///
+/// - 日本円は `¥4,800 / 12 = ¥400` で小数を持たない
+/// - 米ドルは `$29.99 / 12 = $2.4991…` で小数が必要
+///
+/// 以前は `.round()` で整数に丸めていたため、米ドルでは `$2` と
+/// **実際より約20%安く**表示されていた（月額は `$2.99`）。
+///
+/// [rawPrice] が 0 以下のときは表示しない（`null` を返す）。
+@visibleForTesting
+String? perMonthLabelFor({
+  required double rawPrice,
+  required String currencySymbol,
+  required String formattedPrice,
+}) {
+  if (rawPrice <= 0) return null;
+
+  // 「区切り文字＋1〜2桁、かつその後ろに数字が続かない」最後の箇所を小数部とみなす。
+  // 末尾アンカーにしないのは `29,99 €` のように通貨記号が数字の後ろに来る
+  // 表記があるため。`¥4,800` の `,800` は3桁なので小数部とは判定されない。
+  final fractions = RegExp(r'[.,](\d{1,2})(?!\d)').allMatches(formattedPrice);
+  final digits = fractions.isEmpty ? 0 : fractions.last.group(1)!.length;
+
+  final perMonth = (rawPrice / 12).toStringAsFixed(digits);
+  return '1か月あたり $currencySymbol$perMonth 相当';
 }
