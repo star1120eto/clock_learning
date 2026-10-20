@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:clock_learning/models/level.dart';
 import 'package:clock_learning/models/problem.dart';
-import 'package:clock_learning/widgets/clock_widget.dart';
+import 'package:clock_learning/widgets/responsive_clock.dart';
 import 'package:clock_learning/widgets/clock_controller.dart';
 import 'package:clock_learning/services/problem_generator_service.dart';
 import 'package:clock_learning/services/progress_service.dart';
@@ -252,121 +252,147 @@ class _GameScreenState extends State<GameScreen> {
                 }
               });
             }
-            return Column(
-              children: [
-                const SizedBox(height: 20),
-                // 問題番号
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
+            return SafeArea(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  // 縦幅が狭い端末では余白と文字を詰めて、すべての要素が画面に収まるようにする
+                  final compact = constraints.maxHeight < 640;
+                  final buttonHeight = compact ? 64.0 : 80.0;
+                  final padding = compact ? 8.0 : 16.0;
+
+                  return Column(
                     children: [
-                      Text(
-                        '${gameState.questionCount} / ${GameState.maxQuestions} もん',
-                        style: const TextStyle(fontSize: 18, color: Colors.grey),
-                      ),
-                    ],
-                  ),
-                ),
-                // 問題文
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      'とけいをあわせてね！',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      gameState.currentProblem!.targetTime.hiraganaString,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 40),
-                // 時計ウィジェット（不正解時は正解時刻を表示し文字盤を緑にする）
-                Center(
-                  child: ClockWidget(
-                    controller: gameState.clockController,
-                    level: widget.level,
-                    size: 300,
-                    displayCorrectTime: gameState.lastResult == false,
-                    correctHour: gameState.lastResult == false
-                        ? gameState.currentProblem!.targetTime.hour
-                        : null,
-                    correctMinute: gameState.lastResult == false
-                        ? gameState.currentProblem!.targetTime.minute
-                        : null,
-                    faceBackgroundGreen: gameState.lastResult == false,
-                  ),
-                ),
-                const Spacer(),
-                // 正解/不正解の表示
-                if (gameState.lastResult != null)
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: _buildResultMessage(gameState.lastResult!),
-                  ),
-                // 回答確定ボタン または 不正解時の「つぎのもんだい」ボタン（最小80x80dp）
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: SizedBox(
-                    width: 240,
-                    height: 80,
-                    child: gameState.lastResult == false
-                        ? ElevatedButton(
-                            onPressed: () => gameState.goToNextProblem(),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Theme.of(context).colorScheme.primary,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
+                      SizedBox(height: compact ? 8 : 20),
+                      // 問題番号
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Text(
+                              '${gameState.questionCount} / ${GameState.maxQuestions} もん',
+                              style: TextStyle(
+                                fontSize: compact ? 15 : 18,
+                                color: Colors.grey,
                               ),
-                              minimumSize: const Size(80, 80),
                             ),
-                            child: const Text(
-                              'つぎのもんだい',
-                              style: TextStyle(fontSize: 18),
-                            ),
-                          )
-                        : ElevatedButton(
-                            onPressed: gameState.isChecking
-                                ? null
-                                : () => gameState.checkAnswer(),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              minimumSize: const Size(80, 80),
-                            ),
-                            child: const Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.check, size: 28),
-                                SizedBox(width: 4),
-                                Flexible(
-                                  child: Text(
-                                    'こたえをきめる',
-                                    style: TextStyle(fontSize: 18),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
+                          ],
+                        ),
+                      ),
+                      // 問題文
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'とけいをあわせてね！',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: compact ? 22 : 28,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                  ),
-                ),
-              ],
+                          SizedBox(height: compact ? 4 : 8),
+                          Text(
+                            gameState.currentProblem!.targetTime.hiraganaString,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: compact ? 25 : 32,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: compact ? 12 : 24),
+                      // 時計ウィジェット（残りの縦幅に合わせて伸縮する）
+                      // 不正解時は正解時刻を表示し文字盤を緑にする
+                      Expanded(
+                        child: ResponsiveClock(
+                          controller: gameState.clockController,
+                          level: widget.level,
+                          maxSize: 300,
+                          minSize: 130,
+                          displayCorrectTime: gameState.lastResult == false,
+                          correctHour: gameState.lastResult == false
+                              ? gameState.currentProblem!.targetTime.hour
+                              : null,
+                          correctMinute: gameState.lastResult == false
+                              ? gameState.currentProblem!.targetTime.minute
+                              : null,
+                          faceBackgroundGreen: gameState.lastResult == false,
+                        ),
+                      ),
+                      // 正解/不正解の表示
+                      if (gameState.lastResult != null)
+                        Padding(
+                          padding: EdgeInsets.all(padding),
+                          child: _buildResultMessage(
+                            gameState.lastResult!,
+                            compact,
+                          ),
+                        ),
+                      // 回答確定ボタン または 不正解時の「つぎのもんだい」ボタン
+                      // （タップしやすさのため最小 64x64dp を確保する）
+                      Padding(
+                        padding: EdgeInsets.all(padding),
+                        child: SizedBox(
+                          width: 240,
+                          height: buttonHeight,
+                          child: gameState.lastResult == false
+                              ? ElevatedButton(
+                                  onPressed: () => gameState.goToNextProblem(),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor:
+                                        Theme.of(context).colorScheme.primary,
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    minimumSize:
+                                        Size(buttonHeight, buttonHeight),
+                                  ),
+                                  child: Text(
+                                    'つぎのもんだい',
+                                    style: TextStyle(
+                                      fontSize: compact ? 16 : 18,
+                                    ),
+                                  ),
+                                )
+                              : ElevatedButton(
+                                  onPressed: gameState.isChecking
+                                      ? null
+                                      : () => gameState.checkAnswer(),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.green,
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    minimumSize:
+                                        Size(buttonHeight, buttonHeight),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.check, size: compact ? 24 : 28),
+                                      const SizedBox(width: 4),
+                                      Flexible(
+                                        child: Text(
+                                          'こたえをきめる',
+                                          style: TextStyle(
+                                            fontSize: compact ? 16 : 18,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
             );
           },
         ),
@@ -374,10 +400,10 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
-  Widget _buildResultMessage(bool isCorrect) {
+  Widget _buildResultMessage(bool isCorrect, bool compact) {
     if (isCorrect) {
       return Container(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(compact ? 8 : 16),
         decoration: BoxDecoration(
           color: Colors.green.withValues(alpha: 0.2),
           borderRadius: BorderRadius.circular(10),
@@ -386,16 +412,16 @@ class _GameScreenState extends State<GameScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // 色覚多様性対応：色＋アイコン（○）の併用
-            const Icon(
+            Icon(
               Icons.check_circle,
               color: Colors.green,
-              size: 40,
+              size: compact ? 32 : 40,
             ),
             const SizedBox(width: 8),
-            const Text(
+            Text(
               'せいかい！',
               style: TextStyle(
-                fontSize: 32,
+                fontSize: compact ? 25 : 32,
                 fontWeight: FontWeight.bold,
                 color: Colors.green,
               ),
@@ -410,38 +436,39 @@ class _GameScreenState extends State<GameScreen> {
       }
       final targetTime = problem.targetTime;
       return Container(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(compact ? 8 : 16),
         decoration: BoxDecoration(
           color: Colors.red.withValues(alpha: 0.2),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // 色覚多様性対応：色＋アイコン（×）の併用
-                const Icon(
+                Icon(
                   Icons.cancel,
                   color: Colors.red,
-                  size: 40,
+                  size: compact ? 32 : 40,
                 ),
                 const SizedBox(width: 8),
-                const Text(
+                Text(
                   'ちがいます',
                   style: TextStyle(
-                    fontSize: 24,
+                    fontSize: compact ? 20 : 24,
                     fontWeight: FontWeight.bold,
                     color: Colors.red,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: compact ? 4 : 8),
             Text(
               'せいかいは${targetTime.displayString}です',
-              style: const TextStyle(
-                fontSize: 20,
+              style: TextStyle(
+                fontSize: compact ? 17 : 20,
                 color: Colors.red,
               ),
             ),

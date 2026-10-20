@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:clock_learning/widgets/clock_widget.dart';
+import 'package:clock_learning/widgets/responsive_clock.dart';
 import 'package:clock_learning/widgets/clock_controller.dart';
 import 'package:clock_learning/models/level.dart';
 import 'package:clock_learning/services/audio_service.dart';
@@ -110,49 +110,71 @@ class _FreePlayScreenState extends State<FreePlayScreen>
       ),
       body: Stack(
         children: [
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                'じっくりさわってみよう！',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 40),
-              Center(
-                child: ClockWidget(
-                  controller: _controller,
-                  level: Level.hard,
-                  size: 300,
-                ),
-              ),
-              const SizedBox(height: 40),
-              ListenableBuilder(
-                listenable: _controller,
-                builder: (context, _) {
-                  final hour = _controller.getCurrentHour();
-                  final minute = _controller.getCurrentMinute();
-                  final timeText =
-                      '$hour時${minute == 0 ? 'ちょうど' : '$minute分'}';
-                  return Text(
-                    timeText,
-                    style: const TextStyle(
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
+          SafeArea(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                // 縦幅が狭い端末では余白と文字を詰めて、すべての要素が画面に収まるようにする
+                final compact = constraints.maxHeight < 640;
+
+                return Column(
+                  children: [
+                    SizedBox(height: compact ? 8 : 16),
+                    Text(
+                      'じっくりさわってみよう！',
+                      style: TextStyle(
+                        fontSize: compact ? 20 : 24,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  );
-                },
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'はりをうごかしてみてね',
-                style: TextStyle(fontSize: 18, color: Colors.grey),
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                'ちょうどのじかんにどうぶつがでてくるよ！',
-                style: TextStyle(fontSize: 14, color: Colors.grey),
-              ),
-            ],
+                    SizedBox(height: compact ? 12 : 24),
+                    // 時計は残りの縦幅に合わせて伸縮する
+                    Expanded(
+                      child: ResponsiveClock(
+                        controller: _controller,
+                        level: Level.hard,
+                        maxSize: 300,
+                        minSize: 130,
+                      ),
+                    ),
+                    SizedBox(height: compact ? 12 : 24),
+                    ListenableBuilder(
+                      listenable: _controller,
+                      builder: (context, _) {
+                        final hour = _controller.getCurrentHour();
+                        final minute = _controller.getCurrentMinute();
+                        final timeText =
+                            '$hour時${minute == 0 ? 'ちょうど' : '$minute分'}';
+                        return Text(
+                          timeText,
+                          style: TextStyle(
+                            fontSize: compact ? 29 : 36,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        );
+                      },
+                    ),
+                    SizedBox(height: compact ? 8 : 16),
+                    Text(
+                      'はりをうごかしてみてね',
+                      style: TextStyle(
+                        fontSize: compact ? 16 : 18,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    SizedBox(height: compact ? 6 : 12),
+                    Text(
+                      'ちょうどのじかんにどうぶつがでてくるよ！',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: compact ? 13 : 14,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    SizedBox(height: compact ? 8 : 16),
+                  ],
+                );
+              },
+            ),
           ),
           if (_showingPopup && _hourAnimals.containsKey(_lastPopupHour))
             _AnimalPopup(
