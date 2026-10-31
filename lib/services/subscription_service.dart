@@ -34,7 +34,24 @@ class SubscriptionService extends ChangeNotifier {
   ProductDetails? get yearlyProduct =>
       _products.where((p) => p.id == kYearlySubId).firstOrNull;
 
-  SubscriptionService() {
+  /// 注入された [InAppPurchase]。省略時は [InAppPurchase.instance] を使う。
+  ///
+  /// テストでモックを差し込むための口。`InAppPurchase.instance` は最初に参照した時点で
+  /// 実行プラットフォームの実装を登録してしまう（`flutter test` の既定は android）ため、
+  /// `InAppPurchasePlatform.instance` を差し替える方式ではモックが上書きされる。
+  final InAppPurchase? _injectedIap;
+
+  /// 復元リクエスト後、`purchaseStream` に流れてくる結果を待つ時間。
+  final Duration _restoreSettleDelay;
+
+  // 省略時は従来どおり初回参照を遅延させる（コンストラクタで触らない）
+  InAppPurchase get _iap => _injectedIap ?? InAppPurchase.instance;
+
+  SubscriptionService({
+    InAppPurchase? inAppPurchase,
+    Duration restoreSettleDelay = const Duration(seconds: 2),
+  })  : _injectedIap = inAppPurchase,
+        _restoreSettleDelay = restoreSettleDelay {
     _initialize();
   }
 
@@ -44,7 +61,7 @@ class SubscriptionService extends ChangeNotifier {
     _isPremium = prefs.getBool(_premiumKey) ?? false;
     notifyListeners();
 
-    final isAvailable = await InAppPurchase.instance.isAvailable();
+    final isAvailable = await _iap.isAvailable();
     _storeAvailable = isAvailable;
 
     if (!isAvailable) {
@@ -54,7 +71,7 @@ class SubscriptionService extends ChangeNotifier {
     }
 
     // 購入ストリームを監視
-    _purchaseSubscription = InAppPurchase.instance.purchaseStream.listen(
+    _purchaseSubscription = _iap.purchaseStream.listen(
       _handlePurchaseUpdate,
       onError: (dynamic error) {
         debugPrint('Purchase stream error: $error');
@@ -64,7 +81,7 @@ class SubscriptionService extends ChangeNotifier {
     await _loadProducts();
 
     // 以前の購入を復元（Appleの要件：アプリ起動時に復元を試みる）
-    await InAppPurchase.instance.restorePurchases();
+    await _iap.restorePurchases();
 
     _isLoading = false;
     notifyListeners();
@@ -72,7 +89,7 @@ class SubscriptionService extends ChangeNotifier {
 
   Future<void> _loadProducts() async {
     final response =
-        await InAppPurchase.instance.queryProductDetails(_productIds);
+        await _iap.queryProductDetails(_productIds);
     if (response.notFoundIDs.isNotEmpty) {
       debugPrint('Store products not found: ${response.notFoundIDs}');
     }
@@ -93,7 +110,7 @@ class SubscriptionService extends ChangeNotifier {
           }
           // in_app_purchase 3.x では pendingCompletionData が廃止されたため
           // purchased / restored 時は常に completePurchase を呼ぶ
-          await InAppPurchase.instance.completePurchase(purchase);
+          await _iap.completePurchase(purchase);
           _purchaseError = null;
           break;
         case PurchaseStatus.error:
@@ -116,7 +133,7 @@ class SubscriptionService extends ChangeNotifier {
     notifyListeners();
     try {
       final param = PurchaseParam(productDetails: product);
-      return await InAppPurchase.instance.buyNonConsumable(
+      return await _iap.buyNonConsumable(
         purchaseParam: param,
       );
     } catch (e) {
@@ -140,10 +157,10 @@ class SubscriptionService extends ChangeNotifier {
     _purchaseError = null;
     _sawEntitlementDuringRestore = false;
     try {
-      await InAppPurchase.instance.restorePurchases();
+      await _iap.restorePurchases();
 
       // 復元されたトランザクションは purchaseStream に非同期で届くため待機する
-      await Future.delayed(const Duration(seconds: 2));
+      await Future.delayed(_restoreSettleDelay);
 
       if (!_sawEntitlementDuringRestore && _isPremium) {
         await _setPremium(false);
